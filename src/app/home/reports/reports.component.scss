@@ -1,0 +1,125 @@
+// Container for Reports component
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+// Reports Component Modern Styling
+.reports-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
+  margin: 2rem auto;
+  max-width: 1100px;
+}
+
+.reports-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.reports-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0;
+}
+
+.reports-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+label {
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 0.5rem;
+}
+
+.form-select, .form-control {
+  border-radius: 6px;
+  min-width: 180px;
+  box-shadow: none;
+  border: 1px solid #d1d5db;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #007bff 60%, #0056b3 100%);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: background 0.2s;
+}
+.btn-primary:hover {
+  background: linear-gradient(90deg, #0056b3 60%, #007bff 100%);
+}
+
+.table-responsive {
+  margin-top: 2rem;
+  border-radius: 8px;
+  overflow: auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.table {
+  font-size: 1rem;
+  background: #fafbfc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.table th {
+  background: #f1f3f6;
+  font-weight: 700;
+  color: #2c3e50;
+  border-bottom: 2px solid #e5e7eb;
+}
+.table td {
+  background: #fff;
+  color: #34495e;
+}
+.table th, .table td {
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
+}
+
+.no-data {
+  text-align: center;
+  color: #888;
+  font-size: 1.1rem;
+  padding: 2rem 0;
+}
+
+@media (max-width: 991px) {
+  .reports-card {
+    padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+  }
+  .reports-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .reports-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .table-responsive {
+    font-size: 0.95rem;
+  }
+  .btn {
+    font-size: 0.98rem;
+    padding: 0.45rem 0.9rem;
+  }
+  .reports-title {
+    font-size: 1.2rem;
+  }
+}

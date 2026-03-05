@@ -1,0 +1,33 @@
+export class BudgetPlannerVO {
+  budgetId?: number;
+  budgetGenId?: string;
+  budgetVersion?: number;
+  budgetType?: string;
+  vtypeId?: number;
+  vtypeName?: string;
+  routeMapCode1?: string;
+  routeMapCode2?: string;
+  totalKm?: number;
+  mileage?: number;
+  fuelType?: string;
+  fuelRequired?: number;
+  fuelPrice?: number;
+  fuelPriceDate?: string;
+  fuelCharge?: number;
+  tollCharge?: number;
+  tollCount?: number;
+  permitCharge?: number;
+  driverBeta?: number;
+  otherCharge?: number;
+  tripTotalExpense?: number;
+  markupPercent?: number;
+  markupAmount?: number;
+  tripCost?: number;
+  noOfSeats?: number;
+  costPerSeat?: number;
+  createdBy!: string;
+  creationDate?: Date;
+  updatedBy?: string;
+  updationDate?: Date;
+  isActive!: boolean;
+}

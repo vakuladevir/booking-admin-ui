@@ -1,0 +1,46 @@
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card p-4 shadow-lg" style="width: 350px;">
+      <h2 class="text-center text-primary">Booking Admin</h2>
+  
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Mobile Number -->
+        <div class="mb-3">
+          <label class="form-label">Mobile Number</label>
+          <input type="text" class="form-control" formControlName="username" placeholder="Enter mobile number">
+          <div *ngIf="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" class="text-danger">
+            Mobile number is required!
+          </div>
+        </div>
+  
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" formControlName="password" placeholder="Enter password">
+          <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-danger">
+            Password is required!
+          </div>
+        </div>
+  
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">
+          Login
+        </button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Error Modal -->
+  <div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-danger">Login Failed</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Invalid mobile number or password. Please try again!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  

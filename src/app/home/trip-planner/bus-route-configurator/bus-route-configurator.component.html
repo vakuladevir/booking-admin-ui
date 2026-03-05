@@ -1,0 +1,63 @@
+<div *ngIf="loading" class="text-center my-4">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<div *ngIf="!loading && !error">
+  <h5>Bus Route for {{ routeCode }}</h5>
+  <div *ngFor="let stop of stops" class="card mb-3">
+    <div class="card-header bg-light">
+      <strong>{{ stop.sortNumber }}. {{ stop.stopLocation }}</strong>
+      <span class="ms-3">Timing: <input type="time" [(ngModel)]="stop.timing" class="form-control d-inline-block w-auto" /></span>
+    </div>
+    <div class="card-body">
+      <div *ngIf="stop.boardDropPoints?.length">
+        <table class="table table-bordered table-sm">
+          <thead>
+            <tr>
+              <th>Point Name</th>
+              <th>Full Address</th>
+              <th>Type</th>
+              <th>Timing</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let point of stop.boardDropPoints">
+              <td>{{ point.pointName }}</td>
+              <td>
+                <input type="text" class="form-control form-control-sm" [(ngModel)]="point.fullAddress" placeholder="Enter full address" />
+              </td>
+              <td>
+                <select #typeSel class="form-select form-select-sm d-inline w-auto">
+                  <option value="board">Board</option>
+                  <option value="drop">Drop</option>
+                  <option value="both">Both</option>
+                </select>
+              </td>
+              <td>
+                <input #timingSel type="time" class="form-control form-control-sm d-inline w-auto" />
+              </td>
+              <td>
+                <button class="btn btn-primary btn-sm" (click)="addSelectedPoint(stop, point, typeSel.value, timingSel.value)">Add</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="stop.selectedPoints?.length">
+        <h6>Selected Points:</h6>
+        <ul class="list-group">
+          <li *ngFor="let sel of stop.selectedPoints; let i = index" class="list-group-item d-flex justify-content-between align-items-center">
+            {{ sel.pointName }} ({{ sel.type }}) - {{ sel.timing }}
+            <button class="btn btn-danger btn-sm" (click)="removeSelectedPoint(stop, i)">Remove</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="text-end">
+    <button class="btn btn-success" (click)="applyConfig()">Apply to Trip</button>
+  </div>
+</div>

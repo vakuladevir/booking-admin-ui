@@ -1,0 +1,176 @@
+/* Container styling */
+.container {
+    max-width: 900px;
+    background: #f8f9fa; /* Light Gray Background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Title Styling */
+  h2 {
+    text-align: center;
+    font-weight: 600;
+    color: #343a40;
+  }
+  
+  /* Cards Styling */
+  .card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+    background: white;
+  }
+  
+  /* Form Label Styling */
+  label {
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  /* Input Fields Styling */
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 10px;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  /* Checkbox Styling */
+  input[type="checkbox"] {
+    margin-left: 10px;
+    transform: scale(1.2);
+  }
+  
+  /* Buttons Styling */
+  .btn {
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .btn:hover {
+    opacity: 0.8;
+  }
+  
+  /* Icons Styling */
+  .d-flex button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Badge Styling for Via Location */
+  .badge {
+    font-size: 12px;
+    padding: 4px 8px;
+    font-weight: 500;
+  }
+
+  /* Stop Locations Chips */
+  .badge.bg-info {
+    padding: 6px 10px;
+    border-radius: 16px;
+    font-size: 13px;
+  }
+
+  .stop-chip {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    
+    strong {
+      color: #fff;
+      font-weight: 600;
+    }
+  }
+
+  .badge .btn-close {
+    background-size: 0.6rem;
+    opacity: 0.8;
+  }
+
+  .badge .btn-close:hover {
+    opacity: 1;
+  }
+
+  /* Autocomplete Styling */
+  .autocomplete-list {
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .autocomplete-item {
+    transition: background-color 0.2s ease;
+  }
+
+  .autocomplete-item:hover {
+    background-color: #e9ecef;
+  }
+
+  .gap-1 {
+    gap: 0.25rem !important;
+  }
+
+  .gap-2 {
+    gap: 0.5rem !important;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+  
+    .card {
+      padding: 10px;
+    }
+  
+    .btn {
+      font-size: 14px;
+      padding: 8px 12px;
+    }
+
+    /* Stack form columns vertically on mobile */
+    .row > .col-md-6 {
+      margin-bottom: 10px;
+    }
+
+    /* Adjust table font size on mobile */
+    .table {
+      font-size: 12px;
+    }
+
+    .table th, .table td {
+      padding: 6px;
+      white-space: nowrap;
+    }
+
+    /* Adjust button sizes in action icons */
+    .d-flex.justify-content-center.mb-3 .btn {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+  }
+
+  /* Additional responsive breakpoint for very small devices */
+  @media (max-width: 576px) {
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    .table {
+      font-size: 11px;
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 3px 6px;
+    }
+  }
+  

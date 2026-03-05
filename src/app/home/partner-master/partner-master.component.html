@@ -1,0 +1,337 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2 class="text-center flex-grow-1">Partner Master</h2>
+    <button class="btn btn-outline-info" (click)="onNavigateHome()">
+      <i class="bi bi-house-door"></i>
+    </button>
+  </div>
+  <br>
+
+  <!-- Action Icons -->
+  <div class="d-flex justify-content-center mb-3">
+    <button class="btn btn-outline-primary mx-2" (click)="onLoadPartner()"><i class="bi bi-plus-circle"></i>
+      Create</button>
+    <button class="btn btn-outline-warning mx-2" data-bs-toggle="modal" data-bs-target="#bpSearchModal">
+      <i class="bi bi-pencil-square"></i>Edit</button>
+    <button class="btn btn-outline-info mx-2" (click)="onLoadPartnerList()"><i class="bi bi-list"></i> List</button>
+  </div>
+
+  <div *ngIf="isShow">
+    <!-- Form Starts Here -->
+    <form [formGroup]="partnerForm">
+
+      <!-- Partner Info -->
+      <div class="card p-3 mb-3">
+        <h4>Partner Info</h4>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label>Name</label>
+            <input type="text" formControlName="partnerName" class="form-control" required />
+            <div *ngIf="partnerForm.get('partnerName')?.touched && partnerForm.get('partnerName')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Address</label>
+            <input type="text" formControlName="address" class="form-control" required />
+            <div *ngIf="partnerForm.get('address')?.touched && partnerForm.get('address')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>City</label>
+            <select formControlName="city" class="form-control">
+              <option value="" disabled selected>Select a district</option>
+              <option *ngFor="let district of districts" [value]="district">
+                {{ district }}
+              </option>
+            </select>
+            <div *ngIf="partnerForm.get('city')?.touched && partnerForm.get('city')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>State</label>
+            <select formControlName="state" class="form-control">
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Pondicherry">Pondicherry</option>
+            </select>
+            <div *ngIf="partnerForm.get('state')?.touched && partnerForm.get('state')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Pincode</label>
+            <input type="text" formControlName="pincode" class="form-control" required />
+            <div *ngIf="partnerForm.get('pincode')?.touched && partnerForm.get('pincode')?.invalid" class="text-danger">
+              <span *ngIf="partnerForm.get('pincode')?.errors?.['required']">Mandatory Field</span>
+              <span *ngIf="partnerForm.get('pincode')?.errors?.['pattern']">Enter valid pincode (Eg: 600001)</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Business Background</label>
+            <input type="text" formControlName="businessBackground" class="form-control" />
+            <div *ngIf="partnerForm.get('businessBackground')?.touched && partnerForm.get('businessBackground')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Partner Type</label>
+            <select formControlName="partnerType" class="form-control">
+              <option value="Owner">Owner</option>
+              <option value="Owner or Driver">Owner cum Driver</option>
+              <option value="Agent">Agent</option>
+              <option value="Others">Others</option>
+            </select>
+            <div *ngIf="partnerForm.get('partnerType')?.touched && partnerForm.get('partnerType')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Experience (Years)</label>
+            <input type="number" formControlName="experienceYears" class="form-control" />
+            <div *ngIf="partnerForm.get('experienceYears')?.touched && partnerForm.get('experienceYears')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Region</label>
+            <input type="text" formControlName="region" class="form-control" />
+            <div *ngIf="partnerForm.get('region')?.touched && partnerForm.get('region')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Mobile No</label>
+            <input type="text" formControlName="mobileNo" class="form-control" />
+            <div *ngIf="partnerForm.get('mobileNo')?.touched && partnerForm.get('mobileNo')?.invalid" class="text-danger">
+              <span *ngIf="partnerForm.get('mobileNo')?.errors?.['required']">Mandatory Field</span>
+              <span *ngIf="partnerForm.get('mobileNo')?.errors?.['pattern']">Enter valid 10 digit mobile (Eg: 9876543210)</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Email Id</label>
+            <input type="text" formControlName="emailId" class="form-control" />
+            <div *ngIf="partnerForm.get('emailId')?.touched && partnerForm.get('emailId')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Aadhaar No</label>
+            <input type="text" formControlName="aadhaarNo" class="form-control" />
+            <div *ngIf="partnerForm.get('aadhaarNo')?.touched && partnerForm.get('aadhaarNo')?.invalid" class="text-danger">
+              <span *ngIf="partnerForm.get('aadhaarNo')?.errors?.['required']">Mandatory Field</span>
+              <span *ngIf="partnerForm.get('aadhaarNo')?.errors?.['pattern']">Enter valid Aadhaar (Eg: 123412341234)</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>PAN No</label>
+            <input type="text" formControlName="panNo" class="form-control" />
+            <div *ngIf="partnerForm.get('panNo')?.touched && partnerForm.get('panNo')?.invalid" class="text-danger">
+              <span *ngIf="partnerForm.get('panNo')?.errors?.['required']">Mandatory Field</span>
+              <span *ngIf="partnerForm.get('panNo')?.errors?.['pattern']">Enter valid PAN (Eg: ABCDE1234F)</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Driving License</label>
+            <input type="text" formControlName="drivingLicense" class="form-control" />
+            <div *ngIf="partnerForm.get('drivingLicense')?.touched && partnerForm.get('drivingLicense')?.invalid">
+              <span *ngIf="partnerForm.get('drivingLicense')?.errors?.['required']" class="text-danger">Driving License is required.</span>
+              <span *ngIf="partnerForm.get('drivingLicense')?.errors?.['pattern']" class="text-danger">Enter valid Driving License (Eg: TN0123456789012)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Company Info -->
+      <div class="card p-3 mb-3">
+        <h4>Company Info</h4>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label>Company Name</label>
+            <input type="text" formControlName="companyName" class="form-control" />
+            <div *ngIf="partnerForm.get('companyName')?.touched && partnerForm.get('companyName')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Company Address</label>
+            <input type="text" formControlName="companyAddress" class="form-control" />
+            <div *ngIf="partnerForm.get('companyAddress')?.touched && partnerForm.get('companyAddress')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Company City</label>
+            <select formControlName="companyCity" class="form-control">
+              <option value="" disabled selected>Select a district</option>
+              <option *ngFor="let district of districts" [value]="district">
+                {{ district }}
+              </option>
+            </select>
+            <div *ngIf="partnerForm.get('companyCity')?.touched && partnerForm.get('companyCity')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Company State</label>
+            <select formControlName="companyState" class="form-control">
+              <option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Pondicherry">Pondicherry</option>
+            </select>
+            <div *ngIf="partnerForm.get('companyState')?.touched && partnerForm.get('companyState')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Company Pincode</label>
+            <input type="text" formControlName="companyPincode" class="form-control" />
+            <div *ngIf="partnerForm.get('companyPincode')?.touched && partnerForm.get('companyPincode')?.invalid" class="text-danger">
+              <span *ngIf="partnerForm.get('companyPincode')?.errors?.['required']">Mandatory Field</span>
+              <span *ngIf="partnerForm.get('companyPincode')?.errors?.['pattern']">Enter valid pincode (Eg: 600001)</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Company Mobile No</label>
+            <input type="text" formControlName="companyMobileNo" class="form-control" />
+            <div *ngIf="partnerForm.get('companyMobileNo')?.touched && partnerForm.get('companyMobileNo')?.invalid" class="text-danger">
+              <span *ngIf="partnerForm.get('companyMobileNo')?.errors?.['required']">Mandatory Field</span>
+              <span *ngIf="partnerForm.get('companyMobileNo')?.errors?.['pattern']">Enter valid 10 digit mobile (Eg: 9876543210)</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Company Email Id</label>
+            <input type="text" formControlName="companyEmailId" class="form-control" />
+            <div *ngIf="partnerForm.get('companyEmailId')?.touched && partnerForm.get('companyEmailId')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Manager Name</label>
+            <input type="text" formControlName="managerName" class="form-control" />
+            <div *ngIf="partnerForm.get('managerName')?.touched && partnerForm.get('managerName')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Manager Mobile No</label>
+            <input type="text" formControlName="managerMobileNo" class="form-control" />
+            <div *ngIf="partnerForm.get('managerMobileNo')?.touched && partnerForm.get('managerMobileNo')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Manager Email Id</label>
+            <input type="text" formControlName="managerEmailId" class="form-control" />
+            <div *ngIf="partnerForm.get('managerEmailId')?.touched && partnerForm.get('managerEmailId')?.invalid" class="text-danger">
+              Mandatory Field
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>GST Applicable</label>
+            <input type="checkbox" formControlName="isGst" />
+          </div>
+          <div class="col-md-6 mb-3" *ngIf="partnerForm.get('isGst')?.value">
+            <label>GST No</label>
+            <input type="text" formControlName="gstNo" class="form-control" />
+            <div *ngIf="partnerForm.get('gstNo')?.touched || partnerForm.get('gstNo')?.dirty">
+              <span *ngIf="partnerForm.get('gstNo')?.errors?.['required']" class="text-danger">GST No is required.</span>
+              <span *ngIf="partnerForm.get('gstNo')?.errors?.['pattern']" class="text-danger">Enter valid GST No (Eg: 33ABCDE1234F1Z5)</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>Is Address Proof Submitted</label>
+            <input type="checkbox" formControlName="isAddressProof" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label>All Required Documents Submitted</label>
+            <input type="checkbox" formControlName="isDocumentsSubmitted" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div *ngIf="isCreate"><button type="button" class="btn btn-success w-100" (click)="onCreate()">Create</button>
+      </div>
+      <div class="d-flex justify-content-center gap-2">
+        <div *ngIf="isUpdate"><button type="button" class="btn btn-warning w-400" (click)="onUpdate()">Update</button>
+        </div>
+        <div *ngIf="isDelete"><button type="button" class="btn btn-danger w-400" (click)="onDelete()">Delete</button>
+        </div>
+        <div *ngIf="isView"><button type="button" class="btn btn-secondary w-400" (click)="onBack()">Back</button></div>
+      </div>
+    </form>
+  </div>
+
+  <!-- BP Number Search Modal -->
+  <div class="modal fade" id="bpSearchModal" tabindex="-1" aria-labelledby="bpSearchLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="bpSearchLabel">Search Partner by BP Number</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="bpNumber">Enter BP Number</label>
+          <input id="bpNumber" type="text" class="form-control" [(ngModel)]="bpNumber" (input)="onBpNumberInput()" placeholder="Type BP Number..." autocomplete="off">
+          <div *ngIf="filteredBpNumbersArr.length > 0 && bpNumber">
+            <ul class="list-group position-absolute w-100" style="z-index: 10; max-height: 200px; overflow-y: auto;">
+              <li class="list-group-item list-group-item-action" *ngFor="let arr of filteredBpNumbersArr" (click)="selectBpNumber(arr)">{{ arr }}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" (click)="onSearchPartner()"
+            data-bs-dismiss="modal">Search</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Display Table only if isListView is true -->
+  <div *ngIf="isListView" class="card mt-4 p-3">
+    <h4 class="text-center">Partner List</h4>
+
+    <!-- Search Input -->
+    <input type="text" class="form-control mb-3" placeholder="Search partners..." [(ngModel)]="searchText"
+      (input)="onSearchChange()" />
+
+    <!-- Responsive Table with Horizontal Scroll -->
+    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+      <table class="table table-striped table-hover">
+        <thead class="table-primary sticky-top">
+          <tr>
+            <th>#</th>
+            <th>BP Code</th>
+            <th>Name</th>
+            <th>Company Name</th>
+            <th>Company Mobile</th>
+            <th>Region</th>
+            <th>State</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let partner of filteredPartners; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ partner.bpNo }}</td>
+            <td>{{ partner.partnerName }}</td>
+            <td>{{ partner.companyName }}</td>
+            <td>{{ partner.companyMobileNo }}</td>
+            <td>{{ partner.region }}</td>
+            <td>{{ partner.state }}</td>
+            <td>
+              <button class="btn btn-info btn-sm mx-1 py-0" (click)="onView(partner.bpNo)"><i
+                  class="bi bi-eye"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+</div>

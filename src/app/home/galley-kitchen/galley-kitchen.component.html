@@ -1,0 +1,312 @@
+<div class="container mt-4">
+    <div class="card shadow rounded mb-4 mx-auto p-4" style="max-width: 900px;">
+        <div class="card-header bg-white border-0 pb-0 px-4 pt-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="text-center flex-grow-1 mb-0">Galley Kitchen</h4>
+                <button class="btn btn-outline-info" (click)="onNavigateHome()">
+                    <i class="bi bi-house-door"></i>
+                </button>
+            </div>
+            <div class="d-flex justify-content-center mb-3 mt-3">
+                <button class="btn btn-outline-primary mx-2" (click)="onCreateGalleyKitchen()"><i
+                        class="bi bi-plus-circle"></i> Create</button>
+                <button class="btn btn-outline-warning mx-2" data-bs-toggle="modal" data-bs-target="#editItemModal" (click)="onEditModalOpen()">
+                    <i class="bi bi-pencil-square"></i> Edit
+                </button>
+                <button class="btn btn-outline-info mx-2" (click)="onLoadGalleyKitchenList()"><i class="bi bi-list"></i>
+                    List</button>
+            </div>
+        </div>
+        <div *ngIf="isShow">
+            <div class="card-body pt-3 px-4 pb-4">
+                <!-- Form Starts Here -->
+                <form [formGroup]="galleyKitchenForm">
+                    <div class="row g-3">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <input type="hidden" formControlName="itemId" />
+                            <div class="mb-3">
+                                <label class="form-label">Item Name</label>
+                                <input type="text" class="form-control" formControlName="itemName"
+                                    [readonly]="!isEdit" />
+                                <div *ngIf="galleyKitchenForm.get('itemName')?.touched && galleyKitchenForm.get('itemName')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('itemName')?.errors?.['required']">
+                                        Item Name is required. Example: Rice
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Pack Size</label>
+                                <input type="text" class="form-control" formControlName="packSize"
+                                    [readonly]="!isEdit" />
+                                <div *ngIf="galleyKitchenForm.get('packSize')?.touched && galleyKitchenForm.get('packSize')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('packSize')?.errors?.['required']">
+                                        Pack Size is required. Example: 1kg
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Landing Price</label>
+                                <input type="number" class="form-control" formControlName="landingPrice"
+                                    [readonly]="!isEdit" />
+                                <div class="form-text">Enter the price <b>excluding tax</b>.</div>
+                                <div *ngIf="galleyKitchenForm.get('landingPrice')?.touched && galleyKitchenForm.get('landingPrice')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('landingPrice')?.errors?.['required']">
+                                        Landing Price is required. Please enter the value excluding tax.
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('landingPrice')?.errors?.['min']">
+                                        Landing Price must be at least 0.01.
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('landingPrice')?.errors?.['max']">
+                                        Landing Price cannot exceed 100000.00.
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Selling Price</label>
+                                <input type="number" class="form-control" formControlName="sellingPrice"
+                                    [readonly]="!isEdit" />
+                                <div class="form-text">Enter the price <b>excluding tax</b>.</div>
+                                <div *ngIf="galleyKitchenForm.get('sellingPrice')?.touched && galleyKitchenForm.get('sellingPrice')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('sellingPrice')?.errors?.['required']">
+                                        Selling Price is required. Please enter the value excluding tax.
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('sellingPrice')?.errors?.['min']">
+                                        Selling Price must be at least 0.01.
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('sellingPrice')?.errors?.['max']">
+                                        Selling Price cannot exceed 100000.00.
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <input type="hidden" formControlName="categoryId" />
+                            <div class="mb-3">
+                                <label class="form-label">Category Name</label>
+                                <div class="d-flex align-items-stretch" style="gap: 0.5rem;">
+                                    <div style="position: relative; flex-grow: 1;">
+                                        <input type="text" class="form-control" formControlName="categoryName"
+                                            (input)="onCategoryInput()"
+                                            (focus)="isCategoryDropdownOpen = filteredCategoryArr.length > 0"
+                                            (blur)="closeCategoryDropdown()" autocomplete="off" [readonly]="!isEdit" />
+                                        <div *ngIf="isCategoryDropdownOpen && filteredCategoryArr.length > 0"
+                                            class="category-autocomplete-dropdown">
+                                            <div *ngFor="let cat of filteredCategoryArr"
+                                                (mousedown)="selectCategory(cat)" class="category-autocomplete-item"
+                                                [class.selected]="galleyKitchenForm.get('categoryName')?.value === cat">
+                                                {{ cat }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-success" [disabled]="!isEdit"
+                                        data-bs-toggle="modal" data-bs-target="#addCategoryModal" tabindex="-1"
+                                        style="height: 38px; align-self: flex-start; margin-left: 4px;">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Add Category Modal -->
+                                <div class="modal fade" id="addCategoryModal" tabindex="-1"
+                                    aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="addCategoryModalLabel">Create New Category
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <label for="newCategoryInput">Category Name</label>
+                                                <input id="newCategoryInput" type="text" class="form-control"
+                                                    [(ngModel)]="newCategoryName" name="newCategoryName"
+                                                    [ngModelOptions]="{standalone: true}" autocomplete="off" />
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Cancel</button>
+                                                <button type="button" class="btn btn-primary" (click)="onAddCategory()"
+                                                    data-bs-dismiss="modal"
+                                                    [disabled]="!newCategoryName || !isEdit">Add</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div *ngIf="galleyKitchenForm.get('categoryName')?.touched && galleyKitchenForm.get('categoryName')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('categoryName')?.errors?.['required']">
+                                        Category Name is required. Example: Grains
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Landing Type</label>
+                                <select class="form-control" formControlName="landingType" [disabled]="!isEdit">
+                                    <option value="">-- Select Type --</option>
+                                    <option value="Inhouse">Inhouse</option>
+                                    <option value="External Source">External Source</option>
+                                </select>
+                                <div *ngIf="galleyKitchenForm.get('landingType')?.touched && galleyKitchenForm.get('landingType')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('landingType')?.errors?.['required']">
+                                        Landing Type is required. Example: Retain
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Landing Tax (%)</label>
+                                <input type="number" class="form-control" formControlName="landingTax"
+                                    [readonly]="!isEdit" />
+                                <div class="form-text">Enter the tax as a <b>percentage value</b> (0 to 100).</div>
+                                <div *ngIf="galleyKitchenForm.get('landingTax')?.touched && galleyKitchenForm.get('landingTax')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('landingTax')?.errors?.['required']">
+                                        Landing Tax is required. Please enter a percentage value (0 to 100).
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('landingTax')?.errors?.['min']">
+                                        Landing Tax cannot be less than 0.00%.
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('landingTax')?.errors?.['max']">
+                                        Landing Tax cannot exceed 100.00%.
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Selling Tax (%)</label>
+                                <input type="number" class="form-control" formControlName="sellingTax"
+                                    [readonly]="!isEdit" />
+                                <div class="form-text">Enter the tax as a <b>percentage value</b> (0 to 100).</div>
+                                <div *ngIf="galleyKitchenForm.get('sellingTax')?.touched && galleyKitchenForm.get('sellingTax')?.invalid"
+                                    class="text-danger">
+                                    <ng-container *ngIf="galleyKitchenForm.get('sellingTax')?.errors?.['required']">
+                                        Selling Tax is required. Please enter a percentage value (0 to 100).
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('sellingTax')?.errors?.['min']">
+                                        Selling Tax cannot be less than 0.00%.
+                                    </ng-container>
+                                    <ng-container *ngIf="galleyKitchenForm.get('sellingTax')?.errors?.['max']">
+                                        Selling Tax cannot exceed 100.00%.
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Submit/Update/Delete/Back Buttons -->
+                    <div class="d-flex justify-content-center gap-2">
+                        <div *ngIf="isCreate" class="flex-grow-1"><button type="button" class="btn btn-success w-100"
+                                (click)="onCreate()">Create</button></div>
+                        <div *ngIf="isUpdate"><button type="button" class="btn btn-warning w-400"
+                                (click)="onUpdate()">Update</button></div>
+                        <div *ngIf="isDelete"><button type="button" class="btn btn-danger w-400"
+                                (click)="onDelete()">Delete</button></div>
+                        <div *ngIf="isView"><button type="button" class="btn btn-secondary w-400"
+                                (click)="onBack()">Back</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="itemNameInput">Enter Item Name</label>
+                    <div style="position: relative;">
+                        <input id="itemNameInput" type="text" class="form-control" [(ngModel)]="itemNameInput"
+                            name="itemNameInput" [ngModelOptions]="{standalone: true}" (input)="onItemNameInput()"
+                            (focus)="isItemNameDropdownOpen = itemNameArr.length > 0"
+                            (blur)="closeItemNameDropdown()" autocomplete="off"
+                            aria-autocomplete="list">
+                        <div *ngIf="isItemNameDropdownOpen && filteredItemNameArr.length > 0"
+                            class="autocomplete-list show-autocomplete"
+                            style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+                            <div *ngFor="let name of filteredItemNameArr" (mousedown)="selectItemName(name)"
+                                [class.selected]="itemNameInput === name"
+                                style="padding: 8px 12px; cursor: pointer;">
+                                {{ name }}
+                            </div>
+                        </div>
+                    </div>
+                    <label for="packSizeInput" class="mt-3">Select Pack Size</label>
+                    <div style="position: relative;">
+                        <input id="packSizeInput" type="text" class="form-control" [(ngModel)]="packSizeInput"
+                            name="packSizeInput" [ngModelOptions]="{standalone: true}" (input)="onPackSizeInput()"
+                            (focus)="isPackSizeDropdownOpen = packSizeArr.length > 0"
+                            (blur)="closePackSizeDropdown()" autocomplete="off"
+                            aria-autocomplete="list">
+                        <div *ngIf="isPackSizeDropdownOpen && filteredPackSizeArr.length > 0"
+                            class="autocomplete-list show-autocomplete"
+                            style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+                            <div *ngFor="let size of filteredPackSizeArr" (mousedown)="selectPackSize(size)"
+                                [class.selected]="packSizeInput === size"
+                                style="padding: 8px 12px; cursor: pointer;">
+                                {{ size }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" (click)="onEditSearch()"
+                        data-bs-dismiss="modal">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- List Table -->
+    <div *ngIf="isListView" class="card mt-4 shadow rounded mx-auto p-4" style="max-width: 900px;">
+        <div class="card-body pt-3 px-4 pb-4">
+            <h4 class="text-center">Galley Kitchen List</h4>
+            <input type="text" class="form-control mb-3" placeholder="Search ..." [(ngModel)]="searchText"
+                (input)="onSearchChange()" />
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-striped table-hover">
+                    <thead class="table-primary sticky-top">
+                        <tr>
+                            <th>#</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Pack Size</th>
+                            <th>Landing Price</th>
+                            <th>Landing Type</th>
+                            <th>Landing Tax</th>
+                            <th>Selling Price</th>
+                            <th>Selling Tax</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of filteredGalleyKitchen; let i = index">
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ item.itemName }}</td>
+                            <td>{{ item.categoryName }}</td>
+                            <td>{{ item.packSize }}</td>
+                            <td>{{ item.landingPrice }}</td>
+                            <td>{{ item.landingType }}</td>
+                            <td>{{ item.landingTax }}</td>
+                            <td>{{ item.sellingPrice }}</td>
+                            <td>{{ item.sellingTax }}</td>
+                            <td>
+                                <button class="btn btn-info btn-sm mx-1 py-0" (click)="onView(item)"><i
+                                        class="bi bi-eye"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

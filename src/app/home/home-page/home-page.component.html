@@ -1,0 +1,32 @@
+<!-- <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="card text-center p-3 shadow" (click)="navigateTo('partner-master')">
+          <h4>Partner Master</h4>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3 shadow" (click)="navigateTo('partner-bank')">
+          <h4>Partner Bank</h4>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card text-center p-3 shadow" (click)="navigateTo('trip-planning')">
+          <h4>Trip Planning</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+   -->
+   <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-4 col-sm-6 col-12 mb-4" *ngFor="let tile of tiles">
+        <div class="card shadow-lg text-center p-3 tile" (click)="navigateTo(tile.route)">
+          <!-- <img [src]="tile.image" class="card-img-top img-fluid" alt="Tile Image"> -->
+          <div class="card-body">
+            <h5 class="card-title">{{ tile.name }}</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

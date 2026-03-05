@@ -1,0 +1,57 @@
+.trip-reports-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 2rem 1.5rem;
+  margin-top: 2rem;
+  min-height: 60vh;
+}
+
+.card {
+  border-radius: 8px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  font-size: 0.95rem;
+}
+
+.nav-tabs .nav-link.active {
+  background: #e9ecef;
+  border-color: #dee2e6 #dee2e6 #fff;
+  color: #495057;
+}
+
+@media (max-width: 991px) {
+  .trip-reports-container {
+    padding: 1rem 0.5rem;
+  }
+  .card {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .trip-reports-container {
+    padding: 1rem 0.5rem;
+  }
+  .nav-tabs {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .trip-reports-container {
+    padding: 0.5rem 0.2rem;
+  }
+  .card-header, .card-body {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .table {
+    font-size: 0.89rem;
+  }
+}

@@ -1,0 +1,354 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2 class="text-center flex-grow-1">Budget Planner</h2>
+    <button class="btn btn-outline-info" (click)="onNavigateHome()">
+      <i class="bi bi-house-door"></i>
+    </button>
+  </div>
+  <br>
+
+  <!-- Action Icons -->
+  <div class="d-flex justify-content-center mb-3">
+    <button class="btn btn-outline-primary mx-2" (click)="onCreateBudgetPlanner()"><i class="bi bi-plus-circle"></i>
+      Create</button>
+    <button class="btn btn-outline-warning mx-2" (click)="openEditModal()">
+      <i class="bi bi-pencil-square"></i> Edit
+    </button>
+    <button class="btn btn-outline-info mx-2" (click)="onListBudgets()">
+      <i class="bi bi-list"></i> List
+    </button>
+  </div>
+
+  <div *ngIf="isShow">
+    <!-- Form Starts Here -->
+    <form [formGroup]="budgetPlannerForm">
+
+      <div class="card mb-4 shadow rounded">
+
+        <div class="card-body row gy-3">
+          <!-- Budget Type -->
+          <div class="col-md-12">
+            <label class="form-label">Budget Type</label><br />
+            <div class="form-check form-check-inline">
+              <input type="radio" class="form-check-input" formControlName="budgetType" value="One Way"
+                (change)="updateBudgetGenId()" [attr.disabled]="isFormEditMode() ? true : null" />
+              <label class="form-check-label">One Way</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input type="radio" class="form-check-input" formControlName="budgetType" value="Round Trip"
+                (change)="updateBudgetGenId()" [attr.disabled]="isFormEditMode() ? true : null" />
+              <label class="form-check-label">Round Trip</label>
+            </div>
+          </div>
+
+          <div *ngIf="false" class="mb-3">
+            <label class="form-label">Vehicle Type Id</label>
+            <input type="text" class="form-control" formControlName="vtypeId"
+              [attr.disabled]="isFormEditMode() ? true : null" />
+          </div>
+
+          <!-- Vehicle Type -->
+          <div class="col-md-4">
+            <label class="form-label">Vehicle Type</label>
+            <select class="form-select" formControlName="vtypeName"
+              (change)="updateBudgetGenId(); onSelectVehicleType($event)"
+              [attr.disabled]="isFormEditMode() ? true : null">
+              <option value="">-- Select Vehicle --</option>
+              <option *ngFor="let arr of vTypeNameArr" [value]="arr">
+                {{ arr }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Route Map Code 1 -->
+          <div class="col-md-4">
+            <label class="form-label">RouteMap Code</label>
+            <select class="form-select" formControlName="routeMapCode1"
+              (change)="updateBudgetGenId(); onSelectedRouteMapCode($event)"
+              [attr.disabled]="isFormEditMode() ? true : null">
+              <option value="">-- Select Route --</option>
+              <option *ngFor="let arr of routeMapCodeArr1" [value]="arr">
+                {{ arr }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Route Map Code 2 -->
+          <div class="col-md-4">
+            <label class="form-label">RouteMap Code - Round Trip</label>
+            <select class="form-select" formControlName="routeMapCode2" (change)="updateBudgetGenId()"
+              [attr.disabled]="isFormEditMode() ? true : null">
+              <option value="">-- Select Route --</option>
+              <option *ngFor="let arr of routeMapCodeArr2" [value]="arr">
+                {{ arr }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Budget Gen ID -->
+          <div class="col-md-6">
+            <label class="form-label">Budget Generation ID</label>
+            <input type="text" class="form-control" formControlName="budgetGenId" readonly />
+          </div>
+
+          <!-- Version -->
+          <div class="col-md-6">
+            <label class="form-label">Version</label>
+            <input type="number" class="form-control" formControlName="budgetVersion" readonly />
+          </div>
+
+          <!-- <div class="col-md-6">
+            <label class="form-label">Select Version</label>
+            <div class="input-group">
+              <select class="form-select" formControlName="budgetVersion" [(ngModel)]="selectedVersion" (change)="loadVersionData()">
+                <option *ngFor="let ver of versionList" [value]="ver">{{ ver }}</option>
+              </select>
+              <button class="btn btn-outline-secondary" type="button" (click)="createNewVersion()">+ New</button>
+            </div>
+          </div> -->
+
+        </div>
+      </div>
+
+
+      <!-- Details Card -->
+      <div class="card shadow rounded mb-4">
+        <div class="card-header bg-secondary text-white">
+          <strong>Details</strong>
+        </div>
+        <div class="card-body">
+          <div class="row gy-3">
+            <div class="col-md-4">
+              <label class="form-label">Total Km</label>
+              <input type="number" class="form-control" formControlName="totalKm" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Mileage</label>
+              <input type="number" class="form-control" formControlName="mileage" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Fuel Type</label>
+              <input type="text" class="form-control" formControlName="fuelType" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Fuel Required(L)</label>
+              <input type="number" class="form-control" formControlName="fuelRequired" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Fuel Price(Rs)</label>
+              <input type="number" class="form-control" formControlName="fuelPrice" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Fuel Price Date</label>
+              <input type="date" class="form-control" formControlName="fuelPriceDate" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Fuel Charge</label>
+              <input type="number" class="form-control" formControlName="fuelCharge" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Toll Count</label>
+              <input type="number" class="form-control" formControlName="tollCount" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Toll Charge</label>
+              <input type="number" class="form-control" formControlName="tollCharge" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Permit Charge</label>
+              <input type="number" class="form-control" formControlName="permitCharge" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Driver Beta</label>
+              <input type="number" class="form-control" formControlName="driverBeta" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Other Charge</label>
+              <input type="number" class="form-control" formControlName="otherCharge" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost Card -->
+      <div class="card shadow rounded mb-4">
+        <div class="card-header bg-secondary text-white">
+          <strong>Cost</strong>
+        </div>
+        <div class="card-body">
+          <div class="row gy-3">
+            <div class="col-md-4">
+              <label class="form-label">Trip Total Expense</label>
+              <input type="number" class="form-control" formControlName="tripTotalExpense" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Markup Percent%</label>
+              <input type="number" class="form-control" formControlName="markupPercent" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Markup Amount</label>
+              <input type="number" class="form-control" formControlName="markupAmount" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Trip Cost</label>
+              <input type="number" class="form-control" formControlName="tripCost" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">No of Seats</label>
+              <input type="number" class="form-control" formControlName="noOfSeats" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Cost Per Seat</label>
+              <input type="number" class="form-control" formControlName="costPerSeat" />
+              <small class="text-info" *ngIf="budgetPlannerForm.get('budgetType')?.value === 'Round Trip'">
+                <i class="bi bi-info-circle"></i> Round Trip: Calculated using {{ budgetPlannerForm.get('noOfSeats')?.value }} × 2 = {{ (budgetPlannerForm.get('noOfSeats')?.value || 0) * 2 }} effective seats
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-end">
+          <div *ngIf="isCreate"><button type="button" class="btn btn-success" (click)="onSubmit()">Create
+              Budget</button></div>
+          <div class="d-flex justify-content-center gap-2">
+            <div *ngIf="isUpdate"><button type="button" class="btn btn-warning w-400"
+                (click)="onEditUpdate()">Update</button>
+            </div>
+            <div *ngIf="isDelete"><button type="button" class="btn btn-danger w-400"
+                (click)="onEditDelete()">Delete</button>
+            </div>
+            <div *ngIf="isUpdate || isView"><button type="button" class="btn btn-secondary w-400"
+                (click)="onBack()">Back</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="editBudgetModal" tabindex="-1" aria-labelledby="editBudgetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="editBudgetModalLabel">Edit Budget</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editBudgetForm">
+            <div class="mb-3" *ngIf="false">
+              <label class="form-label">Budget ID</label>
+              <input type="text" class="form-control" formControlName="budgetId" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">BudgetGenId</label>
+              <select class="form-select" formControlName="budgetGenId" (change)="onEditBudgetGenIdChange()">
+                <option value="">Select BudgetGenId</option>
+                <option *ngFor="let id of uniqueBudgetGenIds" [value]="id">{{ id }}</option>
+              </select>
+            </div>
+            <div class="mb-3" *ngIf="editVersionList.length > 0">
+              <label class="form-label">Version</label>
+              <select class="form-select" formControlName="budgetVersion">
+                <option value="">Select Version</option>
+                <option *ngFor="let ver of editVersionList" [value]="ver.version">{{ ver.version }}</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" (click)="onEditSubmit()">Submit</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- List Budgets Modal -->
+  <div class="modal fade" id="listBudgetModal" tabindex="-1" aria-labelledby="listBudgetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-info text-dark">
+          <h5 class="modal-title" id="listBudgetModalLabel">List Budgets by BudgetGenId</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">BudgetGenId</label>
+          <select class="form-select mb-3" [(ngModel)]="selectedListBudgetGenId">
+            <option value="">Select BudgetGenId</option>
+            <option *ngFor="let id of uniqueBudgetGenIds" [value]="id">{{ id }}</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="onListBudgetGenIdChange()">Submit</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- List Budgets Table (outside modal) -->
+  <!-- Display Table only if isListView is true -->
+  <div *ngIf="isListView">
+    <div class="container mt-4" *ngIf="selectedListBudgetGenId">
+      <div *ngIf="listBudgetVersionList.length > 0">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead class="table-primary sticky-top">
+              <tr>
+                <th>BudgetId</th>
+                <th>Version</th>
+                <th>Type</th>
+                <th>Vehicle</th>
+                <th>RouteMap1</th>
+                <th>RouteMap2</th>
+                <th>Trip Total Expense</th>
+                <th>Trip Cost</th>
+                <th>Cost Per Seat</th>
+                <th>Active</th>
+                <th>View</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let budget of listBudgetVersionList">
+                <td>{{ budget.budgetId }}</td>
+                <td>{{ budget.budgetVersion }}</td>
+                <td>{{ budget.budgetType }}</td>
+                <td>{{ budget.vtypeName }}</td>
+                <td>{{ budget.routeMapCode1 }}</td>
+                <td>{{ budget.routeMapCode2 }}</td>
+                <td>{{ budget.tripTotalExpense }}</td>
+                <td>{{ budget.tripCost }}</td>
+                <td>{{ budget.costPerSeat }}</td>
+                <td>{{ budget.isActive ? 'Yes' : 'No' }}</td>
+                <td>
+                  <button class="btn btn-info btn-sm mx-1 py-0" (click)="onViewBudget(budget)"><i
+                      class="bi bi-eye"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

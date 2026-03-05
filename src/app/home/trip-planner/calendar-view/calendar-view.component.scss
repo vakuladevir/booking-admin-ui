@@ -1,0 +1,44 @@
+.trip-dot {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #ccc;
+  vertical-align: middle;
+}
+.trip-dot.morning { background: #563329; border-color: #ffe066; }
+.trip-dot.afternoon { background: #ff832b; border-color: #ff922b; } // orange
+.trip-dot.evening { background: #e622ab; border-color: #228be6; }   // deep blue
+.trip-dot.night { background: #845ef7; border-color: #845ef7; }
+
+.trip-status-badge {
+  display: inline-block;
+  color: #fff;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  line-height: 22px;
+  font-weight: bold;
+  font-size: 1rem;
+  box-shadow: 0 0 0 1px #ccc;
+}
+
+.trip-status-badge.planned {
+  background: #ffd43b;
+  color: #212529;
+}
+
+.trip-status-badge.completed {
+  background: #51cf66;
+}
+
+.trip-status-badge.cancelled {
+  background: #fa5252;
+}
+
+// Optional: legend spacing
+.calendar-view .mb-3.d-flex.flex-wrap.align-items-center.gap-3 {
+  gap: 1.5rem !important;
+}

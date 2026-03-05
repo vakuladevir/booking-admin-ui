@@ -1,0 +1,169 @@
+/* Container styling */
+.container {
+  max-width: 900px;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Title Styling */
+h2 {
+  text-align: center;
+  font-weight: 600;
+  color: #343a40;
+}
+
+/* Card styling */
+.card {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+/* Form Label Styling */
+label {
+  font-weight: 500;
+  color: #495057;
+}
+
+/* Input Fields Styling */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding: 10px;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Buttons Styling */
+.btn {
+  font-size: 16px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+/* Drop Point Chips */
+.badge.bg-success {
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  border-radius: 16px;
+}
+
+.drop-point-chip {
+  strong {
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+.badge .btn-close {
+  background-size: 0.6rem;
+  opacity: 0.8;
+}
+
+.badge .btn-close:hover {
+  opacity: 1;
+}
+
+/* Autocomplete Styling */
+.autocomplete-list {
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.autocomplete-list div {
+  transition: background-color 0.2s ease;
+}
+
+.autocomplete-list div:hover {
+  background-color: #e9ecef;
+}
+
+/* Gap Utilities */
+.gap-1 {
+  gap: 0.25rem !important;
+}
+
+.gap-2 {
+  gap: 0.5rem !important;
+}
+
+/* Action Icons */
+.d-flex button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 15px !important;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+
+  .table th, .table td {
+    padding: 6px;
+  }
+
+  .badge {
+    font-size: 10px !important;
+    padding: 4px 8px !important;
+  }
+
+  .d-flex.justify-content-center.mb-3 .btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 10px;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  .table {
+    font-size: 11px;
+  }
+
+  .badge {
+    font-size: 9px !important;
+  }
+
+  .form-control {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+

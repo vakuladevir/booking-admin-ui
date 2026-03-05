@@ -1,0 +1,90 @@
+<div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2 class="text-center flex-grow-1">Partner Bank Management</h2>
+          <button class="btn btn-outline-info" (click)="onNavigateHome()">
+            <i class="bi bi-house-door"></i>
+          </button>
+        </div>
+        <br>
+  
+        <div class="card-body">
+            <form [formGroup]="partnerBankForm">
+              <div class="row">
+                <!-- BP Code -->
+                <div class="col-md-6 mb-3 position-relative">
+                  <label class="form-label">BP Code</label>
+                  <input id="bpNumber" type="text" class="form-control" [(ngModel)]="bpNumber" [ngModelOptions]="{standalone: true}" (input)="onBpNumberInput()" placeholder="Type BP Number..." autocomplete="off">
+                  <div *ngIf="filteredBpNumbersArr.length > 0 && bpNumber">
+                    <ul class="list-group position-absolute w-100" style="z-index: 10; max-height: 200px; overflow-y: auto;">
+                      <li class="list-group-item list-group-item-action" *ngFor="let arr of filteredBpNumbersArr" (click)="selectBpNumber(arr)">{{ arr }}</li>
+                    </ul>
+                  </div>
+                </div>
+                <!-- Partner Name -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Partner Name</label>
+                  <input type="text" formControlName="partnerName" class="form-control" [disabled]="true"  />
+                </div>
+                <!-- Company Name -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Company Name</label>
+                    <input type="text" formControlName="companyName" class="form-control" [disabled]="true"  />
+                  </div>
+                <!-- Bank Name -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Bank Name</label>
+                  <input type="text" formControlName="bankName" class="form-control" required />
+                  <div *ngIf="partnerBankForm.get('bankName')?.touched && partnerBankForm.get('bankName')?.invalid" class="text-danger">
+                    <span *ngIf="partnerBankForm.get('bankName')?.errors?.['required']">Mandatory Field</span>
+                    <span *ngIf="partnerBankForm.get('bankName')?.errors?.['pattern']">Only letters and spaces allowed. Eg: State Bank of India</span>
+                  </div>
+                </div>
+                <!-- Account No -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Account No</label>
+                  <input type="text" formControlName="accountNo" class="form-control" required />
+                  <div *ngIf="partnerBankForm.get('accountNo')?.touched && partnerBankForm.get('accountNo')?.invalid" class="text-danger">
+                    <span *ngIf="partnerBankForm.get('accountNo')?.errors?.['required']">Mandatory Field</span>
+                    <span *ngIf="partnerBankForm.get('accountNo')?.errors?.['pattern']">Only digits, 9-18 digits. Eg: 123456789012</span>
+                  </div>
+                </div>
+                <!-- Beneficiary Name -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Beneficiary Name</label>
+                  <input type="text" formControlName="beneficiaryName" class="form-control" required />
+                  <div *ngIf="partnerBankForm.get('beneficiaryName')?.touched && partnerBankForm.get('beneficiaryName')?.invalid" class="text-danger">
+                    <span *ngIf="partnerBankForm.get('beneficiaryName')?.errors?.['required']">Mandatory Field</span>
+                    <span *ngIf="partnerBankForm.get('beneficiaryName')?.errors?.['pattern']">Only letters and spaces allowed. Eg: Ramesh Kumar</span>
+                  </div>
+                </div>
+                <!-- IFSC Code -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">IFSC Code</label>
+                  <input type="text" formControlName="ifscCode" class="form-control" required />
+                  <div *ngIf="partnerBankForm.get('ifscCode')?.touched && partnerBankForm.get('ifscCode')?.invalid" class="text-danger">
+                    <span *ngIf="partnerBankForm.get('ifscCode')?.errors?.['required']">Mandatory Field</span>
+                    <span *ngIf="partnerBankForm.get('ifscCode')?.errors?.['pattern']">Format: 4 letters, 0, 6 digits/letters. Eg: SBIN0001234</span>
+                  </div>
+                </div>
+                <!-- Account Type -->
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Account Type</label>
+                  <select formControlName="accountType" class="form-control">
+                    <option value="Savings">Savings</option>
+                    <option value="Current">Current</option>
+                  </select>
+                </div>
+              </div>
+              <br>
+      
+              <!-- Buttons -->
+              <div class="d-flex justify-content-center gap-2 mt-3">
+                <div *ngIf="isCreate"><button type="button" class="btn btn-success px-4" (click)="onCreate()">Create</button></div>
+                <div *ngIf="isUpdate"><button type="button" class="btn btn-warning px-4" (click)="onUpdate()">Update</button></div>
+                <div *ngIf="isDelete"><button type="button" class="btn btn-danger px-4" (click)="onDelete()">Delete</button></div>
+                <div *ngIf="isView"><button type="button" class="btn btn-secondary px-4" (click)="onBack()">Reset</button></div>
+              </div>
+            </form>
+          </div>
+  </div>
+  

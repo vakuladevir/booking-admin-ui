@@ -1,0 +1,241 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="text-center flex-grow-1">Vehicle Master</h2>
+        <button class="btn btn-outline-info" (click)="onNavigateHome()">
+            <i class="bi bi-house-door"></i>
+        </button>
+    </div>
+    <br>
+
+    <!-- Action Icons -->
+    <div class="d-flex justify-content-center mb-3">
+        <button class="btn btn-outline-primary mx-2" (click)="onLoadCreate()"><i class="bi bi-plus-circle"></i>
+            Create</button>
+        <button class="btn btn-outline-warning mx-2" data-bs-toggle="modal" data-bs-target="#vehicleCodeSearchModal">
+            <i class="bi bi-pencil-square"></i>Edit</button>
+        <button class="btn btn-outline-info mx-2" (click)="onLoadVehicleList()"><i class="bi bi-list"></i> List</button>
+    </div>
+
+    <div *ngIf="isShow" class="container mt-4">
+        <form [formGroup]="vehicleForm">
+            <div class="row g-3">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Vehicle Type</label>
+                        <select id="vTypeName" class="form-control" [(ngModel)]="vTypeName"
+                            [ngModelOptions]="{standalone: true}" class="form-control"
+                            (change)="onSelectVehicleType($event)" [disabled]="!isEdit">
+                            <option *ngFor="let arr of vTypeNameArr" [value]="arr">
+                                {{ arr }}
+                            </option>
+                        </select>
+                    </div>
+                    <div *ngIf="false" class="mb-3">
+                        <label class="form-label">Vehicle Type Id</label>
+                        <input type="text" class="form-control" formControlName="vtypeId" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Model</label>
+                        <input type="text" class="form-control" formControlName="model" required/>
+                        <div *ngIf="vehicleForm.get('model')?.touched && vehicleForm.get('model')?.invalid" class="text-danger">
+                          <ng-container *ngIf="vehicleForm.get('model')?.errors?.['required']">Model is required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('model')?.errors?.['pattern']">Model should be 2-30 characters, letters, numbers, hyphens allowed. Example: <span class='text-muted'>Swift-2022</span></ng-container>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Seating Capacity</label>
+                        <input type="number" class="form-control" formControlName="seatingCapacity" />
+                        <div *ngIf="vehicleForm.get('seatingCapacity')?.touched && vehicleForm.get('seatingCapacity')?.invalid" class="text-danger">
+                          <ng-container *ngIf="vehicleForm.get('seatingCapacity')?.errors?.['required']">Seating Capacity is required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('seatingCapacity')?.errors?.['min']">Minimum 1 seat required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('seatingCapacity')?.errors?.['max']">Maximum 100 seats allowed.</ng-container>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">License Plate No.</label>
+                        <input type="text" class="form-control" formControlName="licensePlateNo" />
+                        <div *ngIf="vehicleForm.get('licensePlateNo')?.touched && vehicleForm.get('licensePlateNo')?.invalid" class="text-danger">
+                          <ng-container *ngIf="vehicleForm.get('licensePlateNo')?.errors?.['required']">License Plate No. is required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('licensePlateNo')?.errors?.['pattern']">Format: <span class='text-muted'>KA01AB1234</span> (2 letters, 2 digits, 1-2 letters, 4 digits)</ng-container>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">RC Number</label>
+                        <input type="text" class="form-control" formControlName="rcNumber" />
+                        <div *ngIf="vehicleForm.get('rcNumber')?.touched && vehicleForm.get('rcNumber')?.invalid" class="text-danger">
+                          <ng-container *ngIf="vehicleForm.get('rcNumber')?.errors?.['required']">RC Number is required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('rcNumber')?.errors?.['pattern']">6-20 characters, uppercase letters and numbers only. Example: <span class='text-muted'>RC123456</span></ng-container>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Insurance No.</label>
+                        <input type="text" class="form-control" formControlName="insuranceNo" />
+                        <div *ngIf="vehicleForm.get('insuranceNo')?.touched && vehicleForm.get('insuranceNo')?.invalid" class="text-danger">
+                          <ng-container *ngIf="vehicleForm.get('insuranceNo')?.errors?.['required']">Insurance No. is required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('insuranceNo')?.errors?.['pattern']">6-20 characters, uppercase letters, numbers, hyphens allowed. Example: <span class='text-muted'>INS-123456</span></ng-container>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">PUC No.</label>
+                        <input type="text" class="form-control" formControlName="pucNo" />
+                        <div *ngIf="vehicleForm.get('pucNo')?.touched && vehicleForm.get('pucNo')?.invalid" class="text-danger">
+                          <ng-container *ngIf="vehicleForm.get('pucNo')?.errors?.['required']">PUC No. is required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('pucNo')?.errors?.['pattern']">6-20 characters, uppercase letters, numbers, hyphens allowed. Example: <span class='text-muted'>PUC-987654</span></ng-container>
+                        </div>
+                    </div>
+                        <div class="mb-3">
+                            <label class="form-label">BP Code</label>
+                            <div style="position: relative;">
+                              <input id="bpNumber" type="text" class="form-control" formControlName="bpCode"
+                                [value]="vehicleForm.get('bpCode')?.value"
+                                (input)="onBpNumberInput($event)"
+                                (focus)="isBpDropdownOpen = filteredBpNumbersArr.length > 0"
+                                (blur)="closeBpDropdown()"
+                                autocomplete="off"
+                                [ngClass]="{'is-invalid': vehicleForm.get('bpCode')?.invalid && (vehicleForm.get('bpCode')?.touched || vehicleForm.get('bpCode')?.dirty)}">
+                              <div *ngIf="isBpDropdownOpen && filteredBpNumbersArr.length > 0 && bpNumber" class="autocomplete-list show-autocomplete" style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+                                <div *ngFor="let bp of filteredBpNumbersArr" (mousedown)="selectBpNumber(bp)" style="padding: 8px 12px; cursor: pointer;">
+                                  {{ bp }}
+                                </div>
+                              </div>
+                              <div *ngIf="vehicleForm.get('bpCode')?.invalid && (vehicleForm.get('bpCode')?.touched || vehicleForm.get('bpCode')?.dirty)" class="invalid-feedback">
+                                <ng-container *ngIf="vehicleForm.get('bpCode')?.errors?.['required']">BP Code is required. Example: <span class='text-muted'>BP12345</span></ng-container>
+                              </div>
+                            </div>
+                        </div>
+                    <div *ngIf="false" class="mb-3">
+                        <label class="form-label">Partner Id</label>
+                        <input type="text" class="form-control" formControlName="partnerId" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Partner Name</label>
+                        <input type="text" class="form-control" formControlName="partnerName" [disabled]="true" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Approver Name</label>
+                        <input type="text" class="form-control" formControlName="approverName" />
+                        <div *ngIf="vehicleForm.get('approverName')?.touched && vehicleForm.get('approverName')?.invalid" class="text-danger">
+                          <ng-container *ngIf="vehicleForm.get('approverName')?.errors?.['required']">Approver Name is required.</ng-container>
+                          <ng-container *ngIf="vehicleForm.get('approverName')?.errors?.['pattern']">3-30 letters only. Example: <span class='text-muted'>John Doe</span></ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkboxes Section -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Documents Submitted </label>
+                        <input type="checkbox" class="form-check-input" formControlName="isDocumentsSubmitted" />
+                    </div>
+
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Approved</label>
+                        <input type="checkbox" class="form-check-input" formControlName="isApproved" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div *ngIf="isCreate"><button type="button" class="btn btn-success w-100"
+                    (click)="onCreate()">Create</button>
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+                <div *ngIf="isUpdate"><button type="button" class="btn btn-warning w-400"
+                        (click)="onUpdate()">Update</button>
+                </div>
+                <div *ngIf="isDelete"><button type="button" class="btn btn-danger w-400"
+                        (click)="onDelete()">Delete</button>
+                </div>
+                <div *ngIf="isView"><button type="button" class="btn btn-secondary w-400"
+                        (click)="onBack()">Back</button></div>
+            </div>
+        </form>
+
+    </div>
+
+
+    <!--Vehicle Code Search Modal -->
+    <div class="modal fade" id="vehicleCodeSearchModal" tabindex="-1" aria-labelledby="vehicleSearchLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vehicleSearchLabel">Search Vehicle by Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="vehicleCode">Enter Vehicle Code</label>
+                    <div style="position: relative;">
+                      <input id="vCodeInput" type="text" class="form-control" [(ngModel)]="vCodeInput" name="vCodeInput"
+                        (input)="onVCodeInput()" (focus)="isVCodeDropdownOpen = filteredVCodeArr.length > 0"
+                        (blur)="closeVCodeDropdown()" autocomplete="off">
+                      <div *ngIf="isVCodeDropdownOpen && filteredVCodeArr.length > 0 && vCodeInput" class="autocomplete-list show-autocomplete" style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+                        <div *ngFor="let code of filteredVCodeArr" (mousedown)="selectVCode(code)" style="padding: 8px 12px; cursor: pointer;">
+                          {{ code }}
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" (click)="onSearchVehicleCode()"
+                        data-bs-dismiss="modal">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display Table only if isListView is true -->
+    <div *ngIf="isListView" class="card mt-4 p-3">
+        <h4 class="text-center">Vehicle List</h4>
+
+        <!-- Search Input -->
+        <input type="text" class="form-control mb-3" placeholder="Search Vehicles" [(ngModel)]="searchText"
+            (input)="onSearchChange()" />
+
+        <!-- Responsive Table with Horizontal Scroll -->
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped table-hover">
+                <thead class="table-primary sticky-top">
+                    <tr>
+                        <th>#</th>
+                        <th>Vehicle Code</th>
+                        <th>Vehicle Type</th>
+                        <th>Model</th>
+                        <th>Seating Capacity</th>
+                        <th>Partner Name</th>
+                        <th>Is Approved</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let vehicle of filteredPartners; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ vehicle.vehicleCode }}</td>
+                        <td>{{ vehicle.vehicleType }}</td>
+                        <td>{{ vehicle.model }}</td>
+                        <td>{{ vehicle.seatingCapacity }}</td>
+                        <td>{{ vehicle.partnerName }}</td>
+                        <td>{{ vehicle.isApproved }}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm mx-1 py-0" (click)="onView(vehicle.vehicleCode)"><i
+                                    class="bi bi-eye"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+</div>

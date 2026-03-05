@@ -1,0 +1,308 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="text-center flex-grow-1">Fleet Maintainenance</h2>
+        <button class="btn btn-outline-info" (click)="onNavigateHome()">
+            <i class="bi bi-house-door"></i>
+        </button>
+    </div>
+    <br>
+
+    <!-- Action Icons -->
+    <div class="d-flex justify-content-center mb-3">
+        <button class="btn btn-outline-primary mx-2" (click)="onLoadCreate()"><i class="bi bi-plus-circle"></i>
+            Create</button>
+        <button class="btn btn-outline-warning mx-2" data-bs-toggle="modal" data-bs-target="#FleetMaintainModal">
+            <i class="bi bi-pencil-square"></i>Edit BasedOn BPCode</button>
+        <button class="btn btn-outline-info mx-2" (click)="onLoadFleetList()"><i class="bi bi-list"></i> List</button>
+    </div>
+    <!-- (click)="onLoadFleetData()" -->
+    <div *ngIf="isShow" class="container mt-4">
+        <form [formGroup]="fleetForm">
+            <div class="row g-3">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Vehicle Code</label>
+                        <div style="position: relative;">
+                          <input id="vehicleCodeInput" type="text" class="form-control" [(ngModel)]="vehicleCodeInput" name="vehicleCodeInput"
+                            [ngModelOptions]="{standalone: true}"
+                            (input)="onVehicleCodeInput()"
+                            (focus)="isVehicleCodeDropdownOpen = filteredVehicleCodeArr.length > 0"
+                            (blur)="closeVehicleCodeDropdown()"
+                            autocomplete="off"
+                            [disabled]="!isEdit">
+                          <div *ngIf="isVehicleCodeDropdownOpen && filteredVehicleCodeArr.length > 0 && vehicleCodeInput" class="autocomplete-list show-autocomplete" style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+                            <div *ngFor="let code of filteredVehicleCodeArr" (mousedown)="selectVehicleCode(code)" style="padding: 8px 12px; cursor: pointer;">
+                              {{ code }}
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div *ngIf="false" class="mb-3">
+                        <label class="form-label">Vehicle ID</label>
+                        <input type="text" class="form-control" formControlName="vehicleId" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Vehicle Type</label>
+                        <input type="text" class="form-control" formControlName="vehicleType"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">BP Code</label>
+                        <div style="position: relative;">
+                          <input id="bpNumber" type="text" class="form-control" formControlName="bpCode"
+                            [value]="fleetForm.get('bpCode')?.value"
+                            (input)="onBpNumberInput($event)"
+                            (focus)="isBpDropdownOpen = filteredBpNumbersArr.length > 0"
+                            (blur)="closeBpDropdown()"
+                            autocomplete="off"
+                            [disabled]="!isEdit"
+                            [ngClass]="{'is-invalid': fleetForm.get('bpCode')?.invalid && (fleetForm.get('bpCode')?.touched || fleetForm.get('bpCode')?.dirty)}">
+                          <div *ngIf="isBpDropdownOpen && filteredBpNumbersArr.length > 0 && bpNumber" class="autocomplete-list show-autocomplete" style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+                            <div *ngFor="let bp of filteredBpNumbersArr" (mousedown)="selectBpNumber(bp)" style="padding: 8px 12px; cursor: pointer;">
+                              {{ bp }}
+                            </div>
+                          </div>
+                          <div *ngIf="fleetForm.get('bpCode')?.invalid && (fleetForm.get('bpCode')?.touched || fleetForm.get('bpCode')?.dirty)" class="invalid-feedback">
+                            <ng-container *ngIf="fleetForm.get('bpCode')?.errors?.['required']">BP Code is required. Example: <span class='text-muted'>BP12345</span></ng-container>
+                          </div>
+                        </div>
+                    </div>
+                    <div *ngIf="false" class="mb-3">
+                        <label class="form-label">Partner Id</label>
+                        <input type="text" class="form-control" formControlName="partnerId" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Partner Name</label>
+                        <input type="text" class="form-control" formControlName="partnerName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Service Agent Name</label>
+                        <input type="text" class="form-control" formControlName="serviceAgentName" />
+                        <div *ngIf="fleetForm.get('serviceAgentName')?.touched && fleetForm.get('serviceAgentName')?.invalid" class="text-danger">
+                          Service Agent Name is required. Example: John Doe (min 3 letters)
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Agent PhoneNo</label>
+                        <input type="text" class="form-control" formControlName="serviceAgentPhoneNumber" />
+                        <div *ngIf="fleetForm.get('serviceAgentPhoneNumber')?.touched && fleetForm.get('serviceAgentPhoneNumber')?.invalid" class="text-danger">
+                          Valid phone number required. Example: 9876543210
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Last Service Date</label>
+                        <input type="date" class="form-control" formControlName="lastServiceDate">
+                        <div *ngIf="fleetForm.get('lastServiceDate')?.touched && fleetForm.get('lastServiceDate')?.invalid" class="text-danger">
+                          Last Service Date is required.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Service Due On</label>
+                        <input type="date" class="form-control" formControlName="serviceDueOn" />
+                        <div *ngIf="fleetForm.get('serviceDueOn')?.touched && fleetForm.get('serviceDueOn')?.invalid" class="text-danger">
+                          Service Due On is required.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Insurance Status</label>
+                        <select class="form-control" formControlName="insuranceStatus">
+                          <option value="">Select Status</option>
+                          <option value="Active">Active</option>
+                          <option value="Expired">Expired</option>
+                          <option value="Pending">Pending</option>
+                        </select>
+                        <div *ngIf="fleetForm.get('insuranceStatus')?.touched && fleetForm.get('insuranceStatus')?.invalid" class="text-danger">
+                          Insurance Status is required. Allowed: Active, Expired, Pending
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Insurance Expiry Date</label>
+                        <input type="date" class="form-control" formControlName="insuranceExpiryDate" />
+                        <div *ngIf="fleetForm.get('insuranceExpiryDate')?.touched && fleetForm.get('insuranceExpiryDate')?.invalid" class="text-danger">
+                          Insurance Expiry Date is required.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Vehicle Condition</label>
+                        <select class="form-control" formControlName="vehicleCondition">
+                          <option value="">Select Condition</option>
+                          <option value="Good">Good</option>
+                          <option value="Average">Average</option>
+                          <option value="Poor">Poor</option>
+                        </select>
+                        <div *ngIf="fleetForm.get('vehicleCondition')?.touched && fleetForm.get('vehicleCondition')?.invalid" class="text-danger">
+                          Vehicle Condition is required. Allowed: Good, Average, Poor
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Approver Name</label>
+                        <input type="text" class="form-control" formControlName="approverName"/>
+                        <div *ngIf="fleetForm.get('approverName')?.touched && fleetForm.get('approverName')?.invalid" class="text-danger">
+                          Approver Name is required. Example: Jane Smith (min 3 letters)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkboxes Section -->
+            <div class="row">
+                <div class="col-md-6">
+
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Is Approved </label>
+                        <input type="checkbox" class="form-check-input" formControlName="isApproved" />
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div *ngIf="isCreate"><button type="button" class="btn btn-success w-100"
+                    (click)="onCreate()">Create</button>
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+                <div *ngIf="isUpdate"><button type="button" class="btn btn-warning w-400"
+                    (click)="onUpdate()">Update</button>
+                </div>
+                <div *ngIf="isDelete"><button type="button" class="btn btn-danger w-400"
+                    (click)="onDelete()">Delete</button>
+                </div>
+                <div *ngIf="isView"><button type="button" class="btn btn-secondary w-400"
+                        (click)="onBack()">Back</button></div>
+            </div>
+        </form>
+
+    </div>
+
+
+    <!-- BP Number Search Modal -->
+  <div class="modal fade" id="FleetMaintainModal" tabindex="-1" aria-labelledby="FleetMaintainLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="bpSearchLabel">Search Fleets based on BP Number</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="bpNumberInput">Enter BP Number</label>
+          <div style="position: relative;">
+            <input id="bpNumberInput" type="text" class="form-control" [(ngModel)]="bpNumberInput" name="bpNumberInput"
+              [ngModelOptions]="{standalone: true}"
+              (input)="onBPNumberInput()"
+              (focus)="isBPNumberDropdownOpen = filteredBPNumbersArr.length > 0"
+              (blur)="closeBPNumberDropdown()"
+              autocomplete="off">
+            <div *ngIf="isBPNumberDropdownOpen && filteredBPNumbersArr.length > 0 && bpNumberInput" class="autocomplete-list show-autocomplete" style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+              <div *ngFor="let code of filteredBPNumbersArr" (mousedown)="selectBPNumber(code)" style="padding: 8px 12px; cursor: pointer;">
+                {{ code }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" (click)="onSearchFleetsByBPNo()"
+            data-bs-dismiss="modal">Search</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isListViewByBP" class="card mt-4 p-3">
+        <h4 class="text-center">Fleet List By BP</h4>       
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped table-hover">
+                <thead class="table-primary sticky-top">
+                    <tr>
+                        <th>#</th>
+                        <th>Fleet Id</th>
+                        <th>Vehicle Code</th>
+                        <th>Vehicle Type</th>
+                        <th>Vechicle Condition</th>
+                        <th>Insurance Status</th>
+                        <th>Approval Status</th>
+                        <th>Partner Name</th>
+                        <th>BP Code</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let fleet of fleetsByBP; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ fleet.fleetId }}</td>
+                        <td>{{ fleet.vehicleCode }}</td>
+                        <td>{{ fleet.vehicleType }}</td>
+                        <td>{{ fleet.vehicleCondition }}</td>
+                        <td>{{ fleet.insuranceStatus }}</td>
+                        <td>{{ fleet.isApproved }}</td>
+                        <td>{{ fleet.partnerName }}</td>
+                        <td>{{ fleet.bpCode }}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm mx-1 py-0" (click)="onEdit(fleet.fleetId)"><i
+                                    class="bi bi-pencil-square"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <!-- Display Table only if isListView is true -->
+     <div *ngIf="isListView" class="card mt-4 p-3">
+        <h4 class="text-center">Fleet List</h4>
+
+   
+        <input type="text" class="form-control mb-3" placeholder="Search Fleet" [(ngModel)]="searchText"
+            (input)="onSearchChange()" />
+
+       
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped table-hover">
+                <thead class="table-primary sticky-top">
+                    <tr>
+                        <th>#</th>
+                        <th>Fleet Id</th>
+                        <th>Vehicle Code</th>
+                        <th>Vehicle Type</th>
+                        <th>Vechicle Condition</th>
+                        <th>Insurance Status</th>
+                        <th>Approval Status</th>
+                        <th>Partner Name</th>
+                        <th>BP Code</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let fleet of filteredPartners; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ fleet.fleetId }}</td>
+                        <td>{{ fleet.vehicleCode }}</td>
+                        <td>{{ fleet.vehicleType }}</td>
+                        <td>{{ fleet.vehicleCondition }}</td>
+                        <td>{{ fleet.insuranceStatus }}</td>
+                        <td>{{ fleet.isApproved }}</td>
+                        <td>{{ fleet.partnerName }}</td>
+                        <td>{{ fleet.bpCode }}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm mx-1 py-0" (click)="onView(fleet.fleetId)"><i
+                                    class="bi bi-eye"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+</div>

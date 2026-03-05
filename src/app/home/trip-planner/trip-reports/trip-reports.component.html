@@ -1,0 +1,483 @@
+<div class="trip-reports-container container-fluid px-2 px-md-4">
+  <h3 class="mb-3">Trip Reports</h3>
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="reportType === 'partner'" (click)="reportType = 'partner'">By Partner</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="reportType === 'driver'" (click)="reportType = 'driver'">By Driver</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="reportType === 'vehicle'" (click)="reportType = 'vehicle'">By Vehicle</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="reportType === 'location'" (click)="reportType = 'location'">By Location</a>
+    </li>
+  </ul>
+  <div [ngSwitch]="reportType">
+    <div *ngSwitchCase="'partner'">
+      <div *ngIf="isLoading" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div>Loading partner report...</div>
+      </div>
+      <div *ngIf="errorMsg" class="alert alert-danger">{{errorMsg}}</div>
+      <div *ngIf="!isLoading && !selectedPartner">
+        <div class="row justify-content-center mb-4">
+          <div class="col-12 col-md-8 col-lg-6">
+            <label for="partnerSelect" class="form-label">Select Partner:</label>
+            <select id="partnerSelect" class="form-select mb-3" (change)="onPartnerSelectChange($event)">
+              <option value="">-- Choose Partner --</option>
+              <option *ngFor="let partner of partners" [value]="partner.partnerId">{{partner.partnerName}} ({{partner.bpNo}})</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="selectedPartner">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+          <h5 class="mb-0">Partner: {{selectedPartner.partnerName}} ({{selectedPartner.bpNo}})</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearPartnerSelection()">
+            <i class="bi bi-x"></i> Clear
+          </button>
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 shadow-sm">
+              <div class="card-header bg-light fw-semibold">Vehicles of Partner</div>
+              <div class="card-body p-0">
+                <div *ngIf="partnerVehicles.length === 0" class="p-3 text-muted">No vehicles found for this partner.</div>
+                <div *ngIf="partnerVehicles.length > 0" class="table-responsive">
+                  <table class="table table-sm table-bordered mb-0 align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Vehicle Code</th>
+                        <th>Type</th>
+                        <th>Seats</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let v of partnerVehicles" (click)="onPartnerVehicleSelect(v)" style="cursor:pointer;">
+                        <td>{{v.vehicleCode}}</td>
+                        <td>{{v.vehicleType}}</td>
+                        <td>{{v.seatingCapacity}}</td>
+                        <td>
+                          <span class="badge" [ngClass]="{'bg-success': v.isApproved, 'bg-warning text-dark': !v.isApproved}">
+                            {{v.isApproved ? 'Approved' : 'Pending'}}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 shadow-sm">
+              <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+                <span>Trips of Partner's Vehicles</span>
+              </div>
+              <div class="card-body p-0">
+                <div *ngIf="filteredPartnerTrips.length === 0" class="p-3 text-muted">No trips found for this partner's vehicles.</div>
+                <div *ngIf="filteredPartnerTrips.length > 0" class="table-responsive" style="min-height: 200px;">
+                  <div *ngIf="selectedPartnerVehicle" class="mb-2">
+                    <span class="fw-semibold">Filtering trips for vehicle:</span>
+                    <span class="badge bg-info text-dark">{{selectedPartnerVehicle.vehicleCode}} ({{selectedPartnerVehicle.vehicleType}})</span>
+                    <button class="btn btn-sm btn-outline-secondary ms-2" (click)="clearPartnerVehicleSelection()">Clear Vehicle Filter</button>
+                  </div>
+                  <table class="table table-sm table-bordered mb-0 align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>TripPlannerId <i class="bi bi-funnel"></i></th>
+                        <th>Vehicle <i class="bi bi-funnel"></i></th>
+                        <th>From <i class="bi bi-funnel"></i></th>
+                        <th>To <i class="bi bi-funnel"></i></th>
+                        <th>Start <i class="bi bi-funnel"></i></th>
+                        <th>End <i class="bi bi-funnel"></i></th>
+                        <th>Status <i class="bi bi-funnel"></i></th>
+                        <th>Action</th>
+                      </tr>
+                      <tr>
+                        <th><input class="form-control form-control-sm" [(ngModel)]="partnerTripFilters.tripPlannerId" placeholder="Filter" /></th>
+                        <th><input class="form-control form-control-sm" [(ngModel)]="partnerTripFilters.vehicleCode" placeholder="Filter" /></th>
+                        <th><input class="form-control form-control-sm" [(ngModel)]="partnerTripFilters.fromLoc" placeholder="Filter" /></th>
+                        <th><input class="form-control form-control-sm" [(ngModel)]="partnerTripFilters.toLoc" placeholder="Filter" /></th>
+                        <th><input class="form-control form-control-sm" [(ngModel)]="partnerTripFilters.srcStartDate" placeholder="Filter" /></th>
+                        <th><input class="form-control form-control-sm" [(ngModel)]="partnerTripFilters.desEndDate" placeholder="Filter" /></th>
+                        <th><input class="form-control form-control-sm" [(ngModel)]="partnerTripFilters.tripStatus" placeholder="Filter" /></th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let t of filteredPartnerTrips">
+                        <td>{{t.tripPlannerId}}</td>
+                        <td>{{t.vehicleCode}}</td>
+                        <td>{{t.fromLoc}}</td>
+                        <td>{{t.toLoc}}</td>
+                        <td class="text-nowrap">{{t.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                        <td class="text-nowrap">{{t.desEndDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                        <td>
+                          <span class="badge" [ngClass]="{
+                            'bg-primary': t.tripStatus === 'Planned',
+                            'bg-success': t.tripStatus === 'Completed',
+                            'bg-danger': t.tripStatus === 'Cancelled'
+                          }">{{t.tripStatus}}</span>
+                        </td>
+                        <td>
+                          <button class="btn btn-outline-info btn-sm" (click)="onViewTrip(t)"><i class="bi bi-eye"></i></button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngSwitchCase="'driver'">
+      <div *ngIf="isLoading" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div>Loading driver report...</div>
+      </div>
+      <div *ngIf="errorMsg" class="alert alert-danger">{{errorMsg}}</div>
+      <div *ngIf="!isLoading && !selectedDriver">
+        <div class="row justify-content-center mb-4">
+          <div class="col-12 col-md-8 col-lg-6">
+            <label for="driverSelect" class="form-label">Select Driver:</label>
+            <select id="driverSelect" class="form-select mb-3" (change)="onDriverSelectChange($event)">
+              <option value="">-- Choose Driver --</option>
+              <option *ngFor="let driver of drivers" [value]="driver.driverId">{{driver.name}} ({{driver.phoneNo}})</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="selectedDriver">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+          <h5 class="mb-0">Driver: {{selectedDriver.name}} ({{selectedDriver.phoneNo}})</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearDriverSelection()">
+            <i class="bi bi-x"></i> Clear
+          </button>
+        </div>
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+            <span>Trips Assigned to Driver</span>
+          </div>
+          <div class="card-body p-0">
+            <div *ngIf="filteredDriverTrips.length === 0" class="p-3 text-muted">No trips found for this driver.</div>
+            <div *ngIf="filteredDriverTrips.length > 0" class="table-responsive" style="min-height: 200px;">
+              <table class="table table-sm table-bordered mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>TripPlannerId <i class="bi bi-funnel"></i></th>
+                    <th>Vehicle <i class="bi bi-funnel"></i></th>
+                    <th>From <i class="bi bi-funnel"></i></th>
+                    <th>To <i class="bi bi-funnel"></i></th>
+                    <th>Start <i class="bi bi-funnel"></i></th>
+                    <th>End <i class="bi bi-funnel"></i></th>
+                    <th>Status <i class="bi bi-funnel"></i></th>
+                    <th>Action</th>
+                  </tr>
+                  <tr>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="driverTripFilters.tripPlannerId" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="driverTripFilters.vehicleCode" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="driverTripFilters.fromLoc" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="driverTripFilters.toLoc" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="driverTripFilters.srcStartDate" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="driverTripFilters.desEndDate" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="driverTripFilters.tripStatus" placeholder="Filter" /></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let t of filteredDriverTrips">
+                    <td>{{t.tripPlannerId}}</td>
+                    <td>{{t.vehicleCode}}</td>
+                    <td>{{t.fromLoc}}</td>
+                    <td>{{t.toLoc}}</td>
+                    <td class="text-nowrap">{{t.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                    <td class="text-nowrap">{{t.desEndDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-primary': t.tripStatus === 'Planned',
+                        'bg-success': t.tripStatus === 'Completed',
+                        'bg-danger': t.tripStatus === 'Cancelled'
+                      }">{{t.tripStatus}}</span>
+                    </td>
+                    <td>
+                      <button class="btn btn-outline-info btn-sm" (click)="onViewTrip(t)"><i class="bi bi-eye"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngSwitchCase="'vehicle'">
+      <div *ngIf="isLoading" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div>Loading vehicle report...</div>
+      </div>
+      <div *ngIf="errorMsg" class="alert alert-danger">{{errorMsg}}</div>
+      <div *ngIf="!isLoading && !selectedVehicle">
+        <div class="row justify-content-center mb-4">
+          <div class="col-12 col-md-8 col-lg-6">
+            <label for="vehicleSelect" class="form-label">Select Vehicle:</label>
+            <select id="vehicleSelect" class="form-select mb-3" (change)="onVehicleSelectChange($event)">
+              <option value="">-- Choose Vehicle --</option>
+              <option *ngFor="let vehicle of vehicles" [value]="vehicle.vehicleId">{{vehicle.vehicleCode}} ({{vehicle.vehicleType}})</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="selectedVehicle">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+          <h5 class="mb-0">Vehicle: {{selectedVehicle.vehicleCode}} ({{selectedVehicle.vehicleType}})</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearVehicleSelection()">
+            <i class="bi bi-x"></i> Clear
+          </button>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 shadow-sm">
+              <div class="card-header bg-light fw-semibold">Vehicle Info</div>
+              <div class="card-body">
+                <div><strong>Vehicle Code:</strong> {{selectedVehicle.vehicleCode}}</div>
+                <div><strong>Type:</strong> {{selectedVehicle.vehicleType}}</div>
+                <div><strong>Seats:</strong> {{selectedVehicle.seatingCapacity}}</div>
+                <div><strong>Status:</strong>
+                  <span class="badge" [ngClass]="{'bg-success': selectedVehicle.isApproved, 'bg-warning text-dark': !selectedVehicle.isApproved}">
+                    {{selectedVehicle.isApproved ? 'Approved' : 'Pending'}}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="card h-100 shadow-sm">
+              <div class="card-header bg-light fw-semibold">Fleet Info</div>
+              <div class="card-body">
+                <ng-container *ngIf="getVehicleFleet(selectedVehicle.vehicleId!) as fleet; else noFleet">
+                  <div><strong>Fleet ID:</strong> {{fleet.fleetId}}</div>
+                  <div><strong>Vehicle Condition:</strong> {{fleet.vehicleCondition}}</div>
+                  <div><strong>Last Service:</strong> {{fleet.lastServiceDate | date:'MMM dd, yyyy'}}</div>
+                  <div><strong>Service Due On:</strong> {{fleet.serviceDueOn | date:'MMM dd, yyyy'}}</div>
+                  <div><strong>Insurance Status:</strong> {{fleet.insuranceStatus}}</div>
+                  <div><strong>Insurance Expiry:</strong> {{fleet.insuranceExpiryDate | date:'MMM dd, yyyy'}}</div>
+                </ng-container>
+                <ng-template #noFleet>
+                  <span class="text-muted">No fleet info found for this vehicle.</span>
+                </ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-light fw-semibold">Trips for Vehicle</div>
+          <div class="card-body p-0">
+            <div *ngIf="filteredVehicleTrips.length === 0" class="p-3 text-muted">No trips found for this vehicle.</div>
+            <div *ngIf="filteredVehicleTrips.length > 0" class="table-responsive" style="min-height: 200px;">
+              <table class="table table-sm table-bordered mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>TripPlannerId <i class="bi bi-funnel"></i></th>
+                    <th>From <i class="bi bi-funnel"></i></th>
+                    <th>To <i class="bi bi-funnel"></i></th>
+                    <th>Start <i class="bi bi-funnel"></i></th>
+                    <th>End <i class="bi bi-funnel"></i></th>
+                    <th>Status <i class="bi bi-funnel"></i></th>
+                    <th>Action</th>
+                  </tr>
+                  <tr>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="vehicleTripFilters.tripPlannerId" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="vehicleTripFilters.fromLoc" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="vehicleTripFilters.toLoc" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="vehicleTripFilters.srcStartDate" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="vehicleTripFilters.desEndDate" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="vehicleTripFilters.tripStatus" placeholder="Filter" /></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let t of filteredVehicleTrips">
+                    <td>{{t.tripPlannerId}}</td>
+                    <td>{{t.fromLoc}}</td>
+                    <td>{{t.toLoc}}</td>
+                    <td class="text-nowrap">{{t.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                    <td class="text-nowrap">{{t.desEndDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-primary': t.tripStatus === 'Planned',
+                        'bg-success': t.tripStatus === 'Completed',
+                        'bg-danger': t.tripStatus === 'Cancelled'
+                      }">{{t.tripStatus}}</span>
+                    </td>
+                    <td>
+                      <button class="btn btn-outline-info btn-sm" (click)="onViewTrip(t)"><i class="bi bi-eye"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngSwitchCase="'location'">
+      <div *ngIf="isLoading" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status"></div>
+        <div>Loading location report...</div>
+      </div>
+      <div *ngIf="errorMsg" class="alert alert-danger">{{errorMsg}}</div>
+      <div *ngIf="!isLoading && !selectedLocation">
+        <div class="row justify-content-center mb-4">
+          <div class="col-12 col-md-8 col-lg-6">
+            <label for="locationSelect" class="form-label">Select Location:</label>
+            <select id="locationSelect" class="form-select mb-3" (change)="onLocationSelectChange($event)">
+              <option value="">-- Choose Location --</option>
+              <option *ngFor="let loc of locations" [value]="loc">{{loc}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="selectedLocation">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+          <h5 class="mb-0">Location: {{selectedLocation}}</h5>
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearLocationSelection()">
+            <i class="bi bi-x"></i> Clear
+          </button>
+        </div>
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-light fw-semibold">Trips for Location</div>
+          <div class="card-body p-0">
+            <div *ngIf="filteredLocationTrips.length === 0" class="p-3 text-muted">No trips found for this location.</div>
+            <div *ngIf="filteredLocationTrips.length > 0" class="table-responsive" style="min-height: 200px;">
+              <table class="table table-sm table-bordered mb-0 align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>TripPlannerId <i class="bi bi-funnel"></i></th>
+                    <th>Vehicle <i class="bi bi-funnel"></i></th>
+                    <th>From <i class="bi bi-funnel"></i></th>
+                    <th>To <i class="bi bi-funnel"></i></th>
+                    <th>Start <i class="bi bi-funnel"></i></th>
+                    <th>End <i class="bi bi-funnel"></i></th>
+                    <th>Status <i class="bi bi-funnel"></i></th>
+                    <th>Action</th>
+                  </tr>
+                  <tr>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="locationTripFilters.tripPlannerId" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="locationTripFilters.vehicleCode" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="locationTripFilters.fromLoc" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="locationTripFilters.toLoc" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="locationTripFilters.srcStartDate" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="locationTripFilters.desEndDate" placeholder="Filter" /></th>
+                    <th><input class="form-control form-control-sm" [(ngModel)]="locationTripFilters.tripStatus" placeholder="Filter" /></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let t of filteredLocationTrips">
+                    <td>{{t.tripPlannerId}}</td>
+                    <td>{{t.vehicleCode}}</td>
+                    <td>{{t.fromLoc}}</td>
+                    <td>{{t.toLoc}}</td>
+                    <td class="text-nowrap">{{t.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                    <td class="text-nowrap">{{t.desEndDate | date:'MMM dd, yyyy HH:mm'}}</td>
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-primary': t.tripStatus === 'Planned',
+                        'bg-success': t.tripStatus === 'Completed',
+                        'bg-danger': t.tripStatus === 'Cancelled'
+                      }">{{t.tripStatus}}</span>
+                    </td>
+                    <td>
+                      <button class="btn btn-outline-info btn-sm" (click)="onViewTrip(t)"><i class="bi bi-eye"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trip Details Modal -->
+  <ng-template [ngIf]="showTripModal && selectedTrip">
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Trip Details (TripPlannerId: {{selectedTrip.tripPlannerId}})</h5>
+            <button type="button" class="btn-close" (click)="closeTripModal()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-2">
+              <div class="col-md-6 mb-2">
+                <strong>Vehicle:</strong> {{selectedTrip.vehicleCode}}
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong>Status:</strong>
+                <span class="badge" [ngClass]="{
+                  'bg-primary': selectedTrip.tripStatus === 'Planned',
+                  'bg-success': selectedTrip.tripStatus === 'Completed',
+                  'bg-danger': selectedTrip.tripStatus === 'Cancelled'
+                }">{{selectedTrip.tripStatus}}</span>
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-6 mb-2">
+                <strong>From:</strong> {{selectedTrip.fromLoc}}
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong>To:</strong> {{selectedTrip.toLoc}}
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-6 mb-2">
+                <strong>Start:</strong> {{selectedTrip.srcStartDate | date:'MMM dd, yyyy HH:mm'}}
+              </div>
+              <div class="col-md-6 mb-2">
+                <strong>End:</strong> {{selectedTrip.desEndDate | date:'MMM dd, yyyy HH:mm'}}
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-4 mb-2">
+                <strong>Driver Phone:</strong> {{selectedTrip.driverPhoneNo}}
+              </div>
+              <div class="col-md-4 mb-2">
+                <strong>Seats:</strong> {{selectedTrip.noOfSeats}}
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-4 mb-2">
+                <strong>Trip Type:</strong> {{selectedTrip.tripType}}
+              </div>
+              <div class="col-md-4 mb-2">
+                <strong>Budget ID:</strong> {{selectedTrip.budgetId || '-'}}
+              </div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-md-4 mb-2">
+                <strong>Trip Cost:</strong> ₹{{selectedTrip.tripCost || 0 | number:'1.2-2'}}
+              </div>
+              <div class="col-md-4 mb-2">
+                <strong>Cost/Seat:</strong> ₹{{selectedTrip.costPerSeat || 0 | number:'1.2-2'}}
+              </div>
+              <div class="col-md-4 mb-2">
+                <strong>Items:</strong> {{selectedTrip.itemName || '-'}}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeTripModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,82 @@
+<!-- Removed Place Name Dropdown with Auto Filter -->
+<div class="container mt-4">
+	<div class="d-flex justify-content-between align-items-center">
+		<h2 class="text-center flex-grow-1">Route Places</h2>
+		<button class="btn btn-outline-info" (click)="onNavigateHome()">
+			<i class="bi bi-house-door"></i>
+		</button>
+	</div>
+	<br>
+
+	<!-- Location Dropdown with Auto Filter -->
+	<div class="row mb-3">
+		<div class="col-md-8 mx-auto">
+			<label class="form-label">Location <span class="text-danger">*</span></label>
+			<div style="position: relative;">
+				<input type="text" class="form-control" [(ngModel)]="locationInput" name="locationInput"
+					(input)="onLocationInput()"
+					(focus)="isLocationDropdownOpen = filteredLocations.length > 0"
+					(blur)="closeLocationDropdown()"
+					autocomplete="off"
+					placeholder="Search location...">
+				<div *ngIf="isLocationDropdownOpen && filteredLocations.length > 0 && locationInput" class="autocomplete-list show-autocomplete" style="position: absolute; z-index: 1000; left: 0; right: 0; background: #fff; border: 1px solid #ced4da; max-height: 180px; overflow-y: auto; margin-top: 2px; padding-left: 0; width: 100%;">
+					<div *ngFor="let loc of filteredLocations" (mousedown)="selectLocation(loc)" style="padding: 8px 12px; cursor: pointer;">
+						{{ loc.routeLocation }}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Places Table for Selected Location -->
+	<div *ngIf="selectedLocation">
+		<div class="d-flex justify-content-between align-items-center mb-2">
+			<h5>Places for: <span class="badge bg-primary">{{ selectedLocation.routeLocation }}</span></h5>
+			<button class="btn btn-danger btn-sm" (click)="onDeleteAllPlaces()"><i class="bi bi-trash"></i> Delete All</button>
+		</div>
+		<div class="table-responsive">
+			<table class="table table-bordered table-hover align-middle">
+				<thead class="table-light">
+					<tr>
+						<th>Place Name</th>
+						<th>Short Name</th>
+						<th style="width: 120px;">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let place of places">
+						<td *ngIf="editPlaceId !== place.placeId">{{ place.placeName }}</td>
+						<td *ngIf="editPlaceId === place.placeId">
+							<input class="form-control form-control-sm" [(ngModel)]="editPlaceName" placeholder="Place Name" />
+						</td>
+						<td *ngIf="editPlaceId !== place.placeId">{{ place.placeNameShort }}</td>
+						<td *ngIf="editPlaceId === place.placeId">
+							<input class="form-control form-control-sm" [(ngModel)]="editPlaceNameShort" placeholder="Short Name" maxlength="10" />
+						</td>
+						<td>
+							<ng-container *ngIf="editPlaceId !== place.placeId">
+								<button class="btn btn-outline-warning btn-sm me-1" (click)="onEditPlace(place)"><i class="bi bi-pencil-square"></i></button>
+								<button class="btn btn-outline-danger btn-sm me-1" (click)="onDeletePlace(place)"><i class="bi bi-trash"></i></button>
+							</ng-container>
+							<ng-container *ngIf="editPlaceId === place.placeId">
+								<button class="btn btn-success btn-sm me-1" (click)="onSaveEditPlace(place)"><i class="bi bi-check"></i></button>
+								<button class="btn btn-secondary btn-sm" (click)="onCancelEdit()"><i class="bi bi-x"></i></button>
+							</ng-container>
+						</td>
+					</tr>
+					<tr *ngIf="addMode">
+						<td><input class="form-control form-control-sm" [(ngModel)]="newPlaceName" placeholder="Place Name" /></td>
+						<td><input class="form-control form-control-sm" [(ngModel)]="newPlaceNameShort" placeholder="Short Name" maxlength="10" /></td>
+						<td>
+							<button class="btn btn-success btn-sm me-1" (click)="onAddPlace()"><i class="bi bi-plus-circle"></i> Add</button>
+							<button class="btn btn-secondary btn-sm" (click)="onCancelAdd()"><i class="bi bi-x"></i></button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="d-flex justify-content-end">
+			<button class="btn btn-outline-primary btn-sm" (click)="onShowAdd()" *ngIf="!addMode"><i class="bi bi-plus-circle"></i> Add Place</button>
+		</div>
+	</div>
+</div>

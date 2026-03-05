@@ -1,0 +1,209 @@
+<div class="calendar-controls mb-3 row g-2 align-items-center">
+    <div class="col-auto">
+        <button class="btn btn-outline-primary me-2" [class.active]="viewMode==='day'" (click)="setViewMode('day')">Day</button>
+        <button class="btn btn-outline-primary me-2" [class.active]="viewMode==='week'" (click)="setViewMode('week')">Week</button>
+        <button class="btn btn-outline-primary" [class.active]="viewMode==='month'" (click)="setViewMode('month')">Month</button>
+    </div>
+    <div class="col-auto" *ngIf="viewMode==='day'">
+        <input type="date" class="form-control" [(ngModel)]="selectedDate"
+            (change)="onDateChange('day', $any($event.target).value)">
+    </div>
+    <div class="col-auto" *ngIf="viewMode==='week'">
+        <input type="week" class="form-control" [(ngModel)]="selectedWeek"
+            (change)="onDateChange('week', $any($event.target).value)">
+    </div>
+    <div class="col-auto" *ngIf="viewMode==='month'">
+        <input type="month" class="form-control" [(ngModel)]="selectedMonth"
+            (change)="onDateChange('month', $any($event.target).value)">
+    </div>
+</div>
+
+<div class="calendar-view container-fluid px-0">
+    <!-- Trip Time Legend -->
+    <div class="mb-3 d-flex flex-wrap align-items-center gap-3">
+        <span class="fw-bold me-2">Trip Time:</span>
+        <span class="d-flex align-items-center gap-1"><span class="trip-dot morning"></span> Morning (5am-12pm)</span>
+        <span class="d-flex align-items-center gap-1"><span class="trip-dot afternoon"></span> Afternoon (12pm-5pm)</span>
+        <span class="d-flex align-items-center gap-1"><span class="trip-dot evening"></span> Evening (5pm-9pm)</span>
+        <span class="d-flex align-items-center gap-1"><span class="trip-dot night"></span> Night (9pm-5am)</span>
+    </div>
+    <!-- Calendar grid (simplified for demo) -->
+    <div *ngIf="viewMode === 'month'">
+        <h5>Month View: {{selectedMonth ? (selectedMonth + '-01' | date:'MMMM yyyy') : (selectedDate | date:'MMMM yyyy')}}</h5>
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3" *ngFor="let trip of trips | calendarMonth: ((selectedMonth ? (selectedMonth + '-01' | dateToObj) : selectedDate) || selectedDate)">
+                <div class="card trip-card h-100" (click)="onTripClick(trip)">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="trip-dot me-2" [ngClass]="getTripTimeClass(trip.srcStartDate)"></span>
+                            <h6 class="mb-0">{{trip.fromLoc}} → {{trip.toLoc}}</h6>
+                            <span class="ms-auto d-flex align-items-center">
+                              <span *ngIf="trip.tripStatus === 'Planned'" class="trip-status-badge planned ms-2" title="Planned">P</span>
+                              <span *ngIf="trip.tripStatus === 'Completed'" class="trip-status-badge completed ms-2" title="Completed">
+                                  <i class="bi bi-check2"></i>
+                              </span>
+                              <span *ngIf="trip.tripStatus === 'Cancelled'" class="trip-status-badge cancelled ms-2" title="Cancelled">
+                                  <i class="bi bi-x"></i>
+                              </span>
+                            </span>
+                        </div>
+                        <div>{{trip.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                        <span class="badge bg-info">{{trip.tripType}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="viewMode === 'week'">
+        <h5>Week View: {{selectedWeek ? ((selectedWeek + '-1') | dateToObj | date:'MMM dd, yyyy') : (selectedDate | date:'MMM dd, yyyy')}} - {{selectedWeek ? ((selectedWeek + '-7') | dateToObj | date:'MMM dd, yyyy') : (selectedDate | date:'MMM dd, yyyy')}}</h5>
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3" *ngFor="let trip of trips | calendarWeek: ((selectedWeek ? ((selectedWeek + '-1') | dateToObj) : selectedDate) || selectedDate)">
+                <div class="card trip-card h-100" (click)="onTripClick(trip)">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="trip-dot me-2" [ngClass]="getTripTimeClass(trip.srcStartDate)"></span>
+                            <h6 class="mb-0">{{trip.fromLoc}} → {{trip.toLoc}}</h6>
+                            <span class="ms-auto d-flex align-items-center">
+                              <span *ngIf="trip.tripStatus === 'Planned'" class="trip-status-badge planned ms-2" title="Planned">P</span>
+                              <span *ngIf="trip.tripStatus === 'Completed'" class="trip-status-badge completed ms-2" title="Completed">
+                                  <i class="bi bi-check2"></i>
+                              </span>
+                              <span *ngIf="trip.tripStatus === 'Cancelled'" class="trip-status-badge cancelled ms-2" title="Cancelled">
+                                  <i class="bi bi-x"></i>
+                              </span>
+                            </span>
+                        </div>
+                        <div>{{trip.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                        <span class="badge bg-info">{{trip.tripType}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="viewMode === 'day'">
+        <h5>Day View: {{selectedDate | date:'MMM dd, yyyy'}}</h5>
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3" *ngFor="let trip of trips | calendarDay:selectedDate">
+                <div class="card trip-card h-100" (click)="onTripClick(trip)">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="trip-dot me-2" [ngClass]="getTripTimeClass(trip.srcStartDate)"></span>
+                            <h6 class="mb-0">{{trip.fromLoc}} → {{trip.toLoc}}</h6>
+                            <span class="ms-auto d-flex align-items-center">
+                              <span *ngIf="trip.tripStatus === 'Planned'" class="trip-status-badge planned ms-2" title="Planned">P</span>
+                              <span *ngIf="trip.tripStatus === 'Completed'" class="trip-status-badge completed ms-2" title="Completed">
+                                  <i class="bi bi-check2"></i>
+                              </span>
+                              <span *ngIf="trip.tripStatus === 'Cancelled'" class="trip-status-badge cancelled ms-2" title="Cancelled">
+                                  <i class="bi bi-x"></i>
+                              </span>
+                            </span>
+                        </div>
+                        <div>{{trip.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                        <span class="badge bg-info">{{trip.tripType}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trip Details Modal (simplified) -->
+
+<div *ngIf="selectedTrip" class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 900px; height: 90vh;">
+        <div class="modal-content card shadow border-0" style="background: linear-gradient(135deg, #f8fafc 80%, #e3e6ed 100%); height: 100%; display: flex; flex-direction: column;">
+            <div class="card-header bg-gradient bg-primary text-white d-flex align-items-center">
+                <i class="bi bi-calendar3 me-2 fs-4"></i>
+                <h5 class="mb-0 flex-grow-1">Trip Details</h5>
+            </div>
+            <div class="modal-body card-body p-3" style="flex: 1 1 auto; overflow-y: auto; min-height: 0;">
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="mb-4 p-3 rounded bg-white shadow-sm">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-info-circle me-1"></i> General Info</h6>
+                            <div class="mb-1"><strong>Trip Type:</strong> {{selectedTrip.tripType}}</div>
+                            <div class="mb-1"><strong>TripPlanner ID:</strong> {{selectedTrip.tripPlannerId}}</div>
+                            <div class="mb-1"><strong>Group ID:</strong> {{selectedTrip.tripGroupId}}</div>
+                            <div class="mb-1"><strong>Budget ID:</strong> {{selectedTrip.budgetId}}</div>
+                            <div class="mb-1"><strong>Created By:</strong> {{selectedTrip.createdBy}}</div>
+                            <div class="mb-1"><strong>Creation Date:</strong> {{selectedTrip.creationDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                            <div class="mb-1"><strong>Updated By:</strong> {{selectedTrip.updatedBy}}</div>
+                            <div class="mb-1"><strong>Updation Date:</strong> {{selectedTrip.updationDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                        </div>
+                        <div class="mb-4 p-3 rounded bg-white shadow-sm">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-geo-alt me-1"></i> Route & Timing</h6>
+                            <div class="mb-1"><strong>Route 1:</strong> {{selectedTrip.routeCode1}} ({{selectedTrip.fromLoc}} → {{selectedTrip.toLoc}})</div>
+                            <div class="mb-1"><strong>Route 2:</strong> {{selectedTrip.routeCode2}} ({{selectedTrip.rtFromLoc}} → {{selectedTrip.rtToLoc}})</div>
+                            <div class="mb-1"><strong>Start Date:</strong> {{selectedTrip.srcStartDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                            <div class="mb-1"><strong>End Date:</strong> {{selectedTrip.desEndDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                            <div class="mb-1"><strong>Return Start Date:</strong> {{selectedTrip.rtSrcStartDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                            <div class="mb-1"><strong>Return End Date:</strong> {{selectedTrip.rtDesEndDate | date:'MMM dd, yyyy HH:mm'}}</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-4 p-3 rounded bg-white shadow-sm">
+                                <h6 class="fw-bold text-primary mb-2"><i class="bi bi-truck me-1"></i> Vehicle Info</h6>
+                                <div class="mb-1"><strong>Vehicle ID:</strong> {{selectedVehicle?.vehicleId}}</div>
+                                <div class="mb-1"><strong>Vehicle Code:</strong> {{selectedVehicle?.vehicleCode}}</div>
+                                <div class="mb-1"><strong>BP Code:</strong> {{selectedVehicle?.bpCode}}</div>
+                                <div class="mb-1"><strong>Partner Name:</strong> {{selectedVehicle?.partnerName}}</div>
+                                <div class="mb-1"><strong>Vehicle Type:</strong> {{selectedVehicle?.vehicleType}}</div>
+                                <div class="mb-1"><strong>Model:</strong> {{selectedVehicle?.model}}</div>
+                                <div class="mb-1"><strong>License Plate No:</strong> {{selectedVehicle?.licensePlateNo}}</div>
+                                <div class="mb-1"><strong>RC Number:</strong> {{selectedVehicle?.rcNumber}}</div>
+                        </div>
+                        <div class="mb-4 p-3 rounded bg-white shadow-sm">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-badge me-1"></i> Driver Info</h6>
+                            <div class="mb-1"><strong>Name:</strong> {{selectedDriver?.name}}</div>
+                            <div class="mb-1"><strong>Driver ID:</strong> {{selectedDriver?.driverId}}</div>
+                            <div class="mb-1"><strong>Phone No:</strong> {{selectedDriver?.phoneNo}}</div>
+                            <div class="mb-1"><strong>BP Code:</strong> {{selectedDriver?.bpCode}}</div>
+                            <div class="mb-1"><strong>Partner Name:</strong> {{selectedDriver?.partnerName}}</div>
+                            <div class="mb-1"><strong>License:</strong> {{selectedDriver?.drivingLicense}}</div>
+                            <div class="mb-1"><strong>Experience:</strong> {{selectedDriver?.experience}}</div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="mb-4 p-3 rounded bg-white shadow-sm">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-cash-coin me-1"></i> Cost & Items</h6>
+                            <div class="mb-1"><strong>Trip Cost:</strong> ₹{{selectedTrip.tripCost}}</div>
+                            <div class="mb-1"><strong>Seats:</strong> {{selectedTrip.noOfSeats}}</div>
+                            <div class="mb-1"><strong>Cost Per Seat:</strong> ₹{{selectedTrip.costPerSeat}}</div>
+                            <div class="mb-1"><strong>Items:</strong> {{selectedTrip.itemName}} (IDs: {{selectedTrip.itemIds}})</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-4 p-3 rounded bg-white shadow-sm">
+                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-grid-3x3-gap me-1"></i> Seat Pricing</h6>
+                            <ul *ngIf="(selectedTripSeaters && selectedTripSeaters.length) || (selectedTrip.seatPricing && selectedTrip.seatPricing.length); else noSeatPricing" class="list-group">
+                                <li *ngFor="let seat of (selectedTripSeaters && selectedTripSeaters.length ? selectedTripSeaters : selectedTrip.seatPricing)" class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Seat {{seat.seatNumber}} ({{seat.seatType}})</span>
+                                    <span class="badge bg-success">₹{{seat.price}}</span>
+                                </li>
+                            </ul>
+                            <ng-template #noSeatPricing>
+                                <div class="text-muted small">Seat pricing info: <span class="badge bg-secondary">NA</span></div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+            </div>
+            <div class="card-footer d-flex flex-wrap justify-content-end gap-2 bg-light">
+                <button type="button" class="btn btn-success" (click)="onUpdateTripStatus(selectedTrip, 'Completed')">
+                    <i class="bi bi-check2-circle me-1"></i> Completed
+                </button>
+                <button type="button" class="btn btn-warning" (click)="onUpdateTripStatus(selectedTrip, 'Cancelled')">
+                    <i class="bi bi-x-circle me-1"></i> Cancelled
+                </button>
+                <button type="button" class="btn btn-danger" (click)="onDeleteTrip(selectedTrip)"><i class="bi bi-trash me-1"></i> Delete</button>
+                <button type="button" class="btn btn-secondary" (click)="selectedTrip = null"><i class="bi bi-x-lg me-1"></i> Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
