@@ -10,10 +10,22 @@ export class MessageDialogComponent {
   @Input() title: string = 'Message';
   @Input() message: string = '';
   @Input() confirmText: string = 'OK';
+  @Input() cancelText: string = 'Cancel';
+  @Input() showCancel: boolean = false;
+  @Input() modalType: 'info' | 'error' | 'delete' = 'info';
 
   constructor(public activeModal: NgbActiveModal) {}
 
+  confirm() {
+    this.activeModal.close(true);
+  }
+
+  cancel() {
+    this.activeModal.dismiss(false);
+  }
+
+  // Used by the close (X) button in header
   closeDialog() {
-    this.activeModal.close();
+    this.cancel();
   }
 }

@@ -10,7 +10,7 @@
   <!-- Action Icons -->
   <div class="d-flex justify-content-center mb-3">
     <button class="btn btn-outline-primary mx-2" (click)="onCreateBoardDrop()"><i class="bi bi-plus-circle"></i> Create</button>
-    <button class="btn btn-outline-warning mx-2" data-bs-toggle="modal" data-bs-target="#searchModal">
+    <button class="btn btn-outline-warning mx-2" (click)="clearFields()" data-bs-toggle="modal" data-bs-target="#searchModal">
       <i class="bi bi-pencil-square"></i> Edit</button>
     <button class="btn btn-outline-info mx-2" (click)="onLoadBoardDropList()"><i class="bi bi-list"></i> List</button>
   </div>
@@ -108,7 +108,7 @@
           <div *ngIf="dropPoints.length === 0 && showPointValidation" class="text-danger mt-2">
             At least one drop point is required
           </div>
-          <small class="text-muted d-block mt-2">Enter point name and press Enter or click to add points in sequence</small>
+          <small class="text-muted d-block mt-2">Enter a point name, then press Enter or click the ‘Add Points’ button to add it to the sequence.</small>
         </div>
       </div>
 
@@ -170,7 +170,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" (click)="clearFields()" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" (click)="onSearch()" data-bs-dismiss="modal">Search</button>
         </div>
       </div>
@@ -182,7 +182,7 @@
     <h4 class="text-center">Board Drop Points List</h4>
 
     <!-- Search Input -->
-    <input type="text" class="form-control mb-3" placeholder="Search by Location Name or Point Name..." [(ngModel)]="searchText"
+    <input type="text" class="form-control mb-3" placeholder="Search by Location, Place or Point Name..." [(ngModel)]="searchText"
       (input)="onSearchChange()" />
 
     <!-- Responsive Table -->
@@ -193,28 +193,26 @@
             <th>#</th>
             <th>Location Name</th>
             <th>Place Name</th>
-            <th>Drop Points</th>
+            <th>Board / Drop Points</th>
             <th>Point Count</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let routeId of getUniqueRouteIds(); let i = index">
+          <tr *ngFor="let pair of getRoutePlacePairs(); let i = index">
             <td>{{ i + 1 }}</td>
-            <td><span class="badge bg-secondary">{{ getLocationNameById(routeId) }}</span></td>
-            <td>
-              <span class="badge bg-info">{{ getPlaceNameByRouteId(routeId) }}</span>
-            </td>
+            <td><span class="badge bg-secondary">{{ getLocationNameById(pair.routeId) }}</span></td>
+            <td><span class="badge bg-info">{{ getPlaceNameById(pair.placeId) }}</span></td>
             <td>
               <div class="d-flex flex-column gap-1">
-                <span *ngFor="let point of getPointsByRouteId(routeId); let pointIdx = index" class="badge bg-success" style="font-size: 0.7rem; text-align: left;">
+                <span *ngFor="let point of getPointsByRouteAndPlace(pair.routeId, pair.placeId); let pointIdx = index" class="badge bg-success" style="font-size: 0.7rem; text-align: left;">
                   <strong>Point {{ pointIdx + 1 }}:</strong> {{ point.pointName }}
                 </span>
               </div>
             </td>
-            <td><span class="badge bg-info">{{ getPointsByRouteId(routeId)?.length || 0 }}</span></td>
+            <td><span class="badge bg-info">{{ getPointsByRouteAndPlace(pair.routeId, pair.placeId).length || 0 }}</span></td>
             <td>
-              <button class="btn btn-info btn-sm mx-1 py-0" (click)="onView(routeId)"><i class="bi bi-eye"></i></button>
+              <button class="btn btn-info btn-sm mx-1 py-0" (click)="onView(pair.routeId, pair.placeId)"><i class="bi bi-eye"></i></button>
             </td>
           </tr>
         </tbody>

@@ -1,5 +1,10 @@
-<div class="modal-header">
-    <h5 class="modal-title">{{ title }}</h5>
+<div class="modal-header" [ngClass]="modalType">
+    <h5 class="modal-title">
+      <span *ngIf="modalType === 'info'" class="me-2"><i class="bi bi-info-circle"></i></span>
+      <span *ngIf="modalType === 'error'" class="me-2"><i class="bi bi-x-circle"></i></span>
+      <span *ngIf="modalType === 'delete'" class="me-2"><i class="bi bi-trash"></i></span>
+      {{ title }}
+    </h5>
     <button type="button" class="btn-close" (click)="closeDialog()" aria-label="Close"></button>
   </div>
   
@@ -8,6 +13,7 @@
   </div>
   
   <div class="modal-footer">
-    <button class="btn btn-primary" (click)="closeDialog()">{{ confirmText }}</button>
+    <button class="btn btn-secondary" *ngIf="showCancel" (click)="cancel()">{{ cancelText }}</button>
+    <button class="btn" [ngClass]="modalType === 'delete' ? 'btn-danger' : 'btn-primary'" (click)="confirm()">{{ confirmText }}</button>
   </div>
   

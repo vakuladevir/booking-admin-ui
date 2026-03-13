@@ -2,6 +2,19 @@
     background-color: #085cb5;
     color: white;
   }
+
+  .modal-header.info {
+    background-color: #085cb5;
+  }
+
+  .modal-header.error {
+    background-color: #f57c00;
+  }
+
+  .modal-header.delete {
+    background-color: #dc3545;
+  }
+
   .modal-body {
     font-size: 16px;
   }
