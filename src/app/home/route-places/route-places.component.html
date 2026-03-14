@@ -65,7 +65,7 @@
 						</td>
 					</tr>
 					<tr *ngIf="addMode">
-						<td><input class="form-control form-control-sm" [(ngModel)]="newPlaceName" placeholder="Place Name" /></td>
+						<td><input id="newPlaceNameInput" type="text" class="form-control form-control-sm" [(ngModel)]="newPlaceName" placeholder="Place Name" /></td>
 						<td><input class="form-control form-control-sm" [(ngModel)]="newPlaceNameShort" placeholder="Short Name" maxlength="10" /></td>
 						<td>
 							<button class="btn btn-success btn-sm me-1" (click)="onAddPlace()"><i class="bi bi-plus-circle"></i> Add</button>

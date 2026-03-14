@@ -106,6 +106,16 @@ export class RoutePlacesComponent implements OnInit {
       this.newPlaceName = '';
       this.newPlaceNameShort = '';
       this.editPlaceId = null;
+      this.focusOnNewPlace()
+    }
+
+    focusOnNewPlace(): void {
+      setTimeout(() => {
+        const inputElement = document.getElementById('newPlaceNameInput') as HTMLInputElement;
+        if (inputElement) {
+          inputElement.focus();
+        }
+      });
     }
 
     onCancelAdd() {

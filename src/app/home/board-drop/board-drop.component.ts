@@ -6,7 +6,6 @@ import { BoardDropPointVO } from 'src/app/model/boardDropPointVO.model';
 import { BoardDropPointService } from 'src/app/services/boardDropPoint.service';
 import { RouteMapService } from 'src/app/services/routeMap.service';
 import { MessageDialogService } from 'src/app/services/message-dialog.service';
-import { GeneralRespVO } from 'src/app/model/generalRespVO.model';
 import { RoutePlaceService } from 'src/app/services/routePlace.service';
 import { RoutePlaceVO } from 'src/app/model/routePlaceVO.model';
 
@@ -75,6 +74,8 @@ export class BoardDropComponent implements OnInit {
   boardDropList: any[] = [];
   filteredBoardDrop: any[] = [];
   searchText: string = '';
+  // map of placeId to placeName for quick lookup in list view
+  placeNameMap: { [key: number]: string } = {};
 
   constructor(
     private formBuilder: FormBuilder,
@@ -106,7 +107,6 @@ export class BoardDropComponent implements OnInit {
     this.selectedLocation = loc;
     this.locationInput = loc.routeLocation;
     this.isLocationDropdownOpen = false;
-    this.loadPointsForLocation();
     this.selectedPoint = null;
     this.pointInput = '';
     this.filteredPoints = [];
@@ -161,6 +161,12 @@ export class BoardDropComponent implements OnInit {
       return;
     }
     this.routePlaceService.getAllByRouteId(this.selectedLocation.routeId).subscribe((data: RoutePlaceVO[]) => {
+      if (!data || data.length === 0) {
+        this.messageDialog.openDialog('Info', 'No places configured for the selected location.', 'Ok')
+            .then(() => {
+              this.onNavigateHome()
+        });
+      }
       this.placeNames = data;
       this.filteredPlaceNames = data;
     });
@@ -176,6 +182,7 @@ export class BoardDropComponent implements OnInit {
     this.selectedPlace = place;
     this.placeInput = place.placeName || '';
     this.isPlaceDropdownOpen = false;
+    this.loadPointsForLocation();
   }
 
   closePlaceDropdown() {
@@ -187,18 +194,18 @@ export class BoardDropComponent implements OnInit {
   onCreate() {
     this.showPointValidation = false;
     if (!this.selectedPlace) {
-      this.messageDialog.openDialog('Error', 'Please select a Place Name before creating.', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Place Name before creating.', 'Close', 'error');
       return;
     }
     if (!this.selectedLocation) {
-      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close', 'error');
       return;
     }
     // Check if data already exists for this location and place
     const placeId = this.selectedPlace.placeId ? this.selectedPlace.placeId : 0;
     this.boardDropPointService.viewAllBoardDropByRouteId(this.selectedLocation.routeId, placeId).subscribe((existing) => {
       if (existing && existing.length > 0) {
-        this.messageDialog.openDialog('Info', 'Drop points already exist for the selected Location and Place. Please edit or delete them before creating new ones.', 'Ok');
+        this.messageDialog.openDialog('Info', 'Drop points already exist for the selected Location and Place. Please edit or delete them before creating new ones.', 'Ok', 'info');
         this.dropPoints = [];
         this.selectedLocation = null;
         this.selectedPlace = null;
@@ -210,13 +217,16 @@ export class BoardDropComponent implements OnInit {
       // Proceed with create if no existing data
       if (this.dropPoints.length === 0) {
         this.showPointValidation = true;
-        this.messageDialog.openDialog('Error', 'Please add at least one drop point', 'Close');
+        this.messageDialog.openDialog('Error', 'Please add at least one drop point', 'Close', 'error');
         return;
       }
       this.boardDropPointService.createAllBoardDropPoint(this.dropPoints).subscribe(
         (resp: any) => {
           let message = 'Board Drop Points Created Successfully!';
-          this.messageDialog.openDialog('Info', message, 'Ok');
+          this.messageDialog.openDialog('Info', message, 'Ok', 'info')
+            .then(() => {
+            this.onLoadBoardDropList(); 
+          });
           this.dropPoints = [];
           this.selectedLocation = null;
           this.selectedPlace = null;
@@ -225,7 +235,7 @@ export class BoardDropComponent implements OnInit {
           this.boardDropForm.reset();
         },
         (error) => {
-          this.messageDialog.openDialog('Error', 'Failed to create board drop points', 'Close');
+          this.messageDialog.openDialog('Error', 'Failed to create board drop points', 'Close', 'error');
         }
       );
     });
@@ -235,16 +245,16 @@ export class BoardDropComponent implements OnInit {
   onUpdate() {
     this.showPointValidation = false;
     if (!this.selectedPlace) {
-      this.messageDialog.openDialog('Error', 'Please select a Place Name before updating.', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Place Name before updating.', 'Close', 'error');
       return;
     }
     if (this.dropPoints.length === 0) {
       this.showPointValidation = true;
-      this.messageDialog.openDialog('Error', 'Please add at least one drop point', 'Close');
+      this.messageDialog.openDialog('Error', 'Please add at least one drop point', 'Close', 'error');
       return;
     }
     if (!this.selectedLocation) {
-      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close', 'error');
       return;
     }
     const username = sessionStorage.getItem('UserInfo.username') || 'admin';
@@ -258,10 +268,13 @@ export class BoardDropComponent implements OnInit {
     this.boardDropPointService.updateAllBoardDrop(this.selectedLocation.routeId, placeId, this.dropPoints).subscribe(
       (resp: any) => {
         let message = 'Board Drop Points Updated Successfully!';
-        this.messageDialog.openDialog('Info', message, 'Ok');
+        this.messageDialog.openDialog('Info', message, 'Ok')
+        .then(() => {
+          this.onLoadBoardDropList(); 
+        });
       },
       (error) => {
-        this.messageDialog.openDialog('Error', 'Failed to update board drop points', 'Close');
+        this.messageDialog.openDialog('Error', 'Failed to update board drop points', 'Close', 'error');
       }
     );
   }
@@ -269,29 +282,44 @@ export class BoardDropComponent implements OnInit {
   // Only one onDelete implementation
   onDelete() {
     if (!this.selectedPlace) {
-      this.messageDialog.openDialog('Error', 'Please select a Place Name before deleting.', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Place Name before deleting.', 'Close', 'error');
       return;
     }
     if (!this.selectedLocation) {
-      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close', 'error');
       return;
     }
-    const placeId = this.selectedPlace && this.selectedPlace.placeId ? this.selectedPlace.placeId : 0;
-    this.boardDropPointService.deleteAllBoardDropByRouteId(this.selectedLocation.routeId, placeId).subscribe(
-      (resp: string) => {
-        this.messageDialog.openDialog('Info', resp, 'Ok');
-        this.dropPoints = [];
-        this.selectedLocation = null;
-        this.locationInput = '';
-        this.boardDropForm.reset();
+
+    this.messageDialog.openConfirmDialog(
+      'Confirm Delete',
+      'Are you sure you want to delete all board drop points for the selected Location and Place?',
+      'Delete',
+      'Cancel'
+    ).then((confirmed) => {
+      if (!confirmed) {
+        return;
       }
-    );
+
+      const placeId = this.selectedPlace && this.selectedPlace.placeId ? this.selectedPlace.placeId : 0;
+      this.boardDropPointService.deleteAllBoardDropByRouteId(this.selectedLocation!.routeId, placeId).subscribe(
+        (resp: string) => {
+          this.messageDialog.openDialog('Info', resp, 'Ok', 'info');
+          this.dropPoints = [];
+          this.selectedLocation = null;
+          this.selectedPlace = null;
+          this.locationInput = '';
+          this.placeInput = '';
+          this.boardDropForm.reset();
+          this.onLoadBoardDropList();
+        }
+      );
+    });
   }
 
   // --- Point Name Methods ---
   addDropPoint() {
     if (!this.selectedPlace) {
-      this.messageDialog.openDialog('Error', 'Please select a Place Name before adding a drop point.', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Place Name before adding a drop point.', 'Close', 'error');
       return;
     }
     if (this.pointInput && !this.dropPoints.some(p => p.pointName === this.pointInput)) {
@@ -304,6 +332,8 @@ export class BoardDropComponent implements OnInit {
       this.dropPoints.push(newPoint);
       this.pointInput = '';
       this.showPointValidation = false;
+    } else {
+      this.messageDialog.openDialog('Error', 'Point name already exists.', 'Close', 'error');
     }
   }
 
@@ -325,6 +355,7 @@ export class BoardDropComponent implements OnInit {
 
   // --- Main Component Methods ---
   onCreateBoardDrop() {
+    this.clearFields();
     this.isShow = true;
     this.isCreate = true;
     this.isUpdate = false;
@@ -334,13 +365,18 @@ export class BoardDropComponent implements OnInit {
     this.isEdit = true;
     this.dropPoints = [];
     this.selectedLocation = null;
-    this.locationInput = '';
     this.initializeForm();
+  }
+
+  clearFields() {    
+    this.isShow = false;
+    this.locationInput = '';
+    this.placeInput = '';
   }
 
   onSearch() {
     if (!this.selectedLocation) {
-      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Location Name', 'Close', 'error');
       return;
     }
     this.isCreate = false;
@@ -358,7 +394,7 @@ export class BoardDropComponent implements OnInit {
   checkAndLoadExistingPoints() {
     if (!this.selectedLocation) return;
     if (!this.selectedPlace) {
-      this.messageDialog.openDialog('Error', 'Please select a Place Name before loading points.', 'Close');
+      this.messageDialog.openDialog('Error', 'Please select a Place Name before loading points.', 'Close', 'error');
       return;
     }
     const placeId = this.selectedPlace.placeId ? this.selectedPlace.placeId : 0;
@@ -381,46 +417,64 @@ export class BoardDropComponent implements OnInit {
     );
   }
 
-
   onLoadBoardDropList() {
+    this.clearFields();
     this.isListView = true;
     this.isCreate = false;
     this.isUpdate = false;
-    this.isShow = false;
     this.isView = false;
     this.isEdit = false;
 
     this.boardDropPointService.viewAllBoardDrop().subscribe((data) => {
       this.boardDropList = data;
-      // Sort data by sortNumber to maintain order
-      this.boardDropList.sort((a, b) => (a.sortNumber || 0) - (b.sortNumber || 0));
+      // Sort data first by routeId then by placeId then by sortNumber
+      this.boardDropList.sort((a, b) => {
+        if (a.routeId !== b.routeId) {
+          return a.routeId - b.routeId;
+        }
+        if (a.placeId !== b.placeId) {
+          return (a.placeId || 0) - (b.placeId || 0);
+        }
+        return (a.sortNumber || 0) - (b.sortNumber || 0);
+      });
       this.filteredBoardDrop = this.boardDropList;
 
-      // Collect all unique placeIds from the boardDropList
-      const allPlaceIds = Array.from(new Set(this.boardDropList.map(p => p.placeId).filter(pid => !!pid)));
-      // For each placeId, load the placeName if not already present
-      if (allPlaceIds.length > 0) {
-        // If all drops are for the same route, just use the first routeId
-        const routeId = this.boardDropList[0]?.routeId;
-        if (routeId) {
-          this.routePlaceService.getAllByRouteId(routeId).subscribe((places: RoutePlaceVO[]) => {
-            this.placeNames = places;
+      // preload place names for every routeId present in the list
+      const routeIds = Array.from(new Set(this.boardDropList.map(p => p.routeId)));
+      this.placeNames = [];
+      this.routePlaceService.getAll().subscribe((places: RoutePlaceVO[]) => {
+        places.forEach(place => {
+            // add to master list if not already present
+            if (!this.placeNames.some(p => p.placeId === place.placeId)) {
+              this.placeNames.push(place);
+            }
+            this.placeNameMap[place.placeId!] = place.placeName || '';
           });
-        }
-      }
+      });
     });
   }
 
   onSearchChange() {
     this.filteredBoardDrop = this.boardDropList.filter(point => {
       const locationName = this.getLocationNameById(point.routeId) || '';
+      const placeName = this.getPlaceNameById(point.placeId) || '';
+      const text = this.searchText.toLowerCase();
       return (
-        locationName.toLowerCase().includes(this.searchText.toLowerCase()) ||
-        point.pointName.toLowerCase().includes(this.searchText.toLowerCase())
+        locationName.toLowerCase().includes(text) ||
+        placeName.toLowerCase().includes(text) ||
+        point.pointName.toLowerCase().includes(text)
       );
     });
-    // Sort filtered results by sortNumber
-    this.filteredBoardDrop.sort((a, b) => (a.sortNumber || 0) - (b.sortNumber || 0));
+    // Sort filtered results by routeId, placeId and then sortNumber for consistent grouping
+    this.filteredBoardDrop.sort((a, b) => {
+      if (a.routeId !== b.routeId) {
+        return a.routeId - b.routeId;
+      }
+      if (a.placeId !== b.placeId) {
+        return (a.placeId || 0) - (b.placeId || 0);
+      }
+      return (a.sortNumber || 0) - (b.sortNumber || 0);
+    });
   }
 
   getLocationNameById(locationId: number): string {
@@ -434,28 +488,64 @@ export class BoardDropComponent implements OnInit {
     return points.sort((a, b) => (a.sortNumber || 0) - (b.sortNumber || 0));
   }
 
-  getUniqueRouteIds(): number[] {
-    const uniqueIds = new Set(this.filteredBoardDrop.map(p => p.routeId));
-    return Array.from(uniqueIds);
+  getPointsByRouteAndPlace(routeId: number, placeId: number): BoardDropPointVO[] {
+    const points = this.boardDropList.filter(p => p.routeId === routeId && p.placeId === placeId);
+    return points.sort((a, b) => (a.sortNumber || 0) - (b.sortNumber || 0));
   }
 
-  onView(locationId: number) {
-    const loc = this.locations.find(l => l.routeId === locationId);
+  getRoutePlacePairs(): { routeId: number; placeId: number }[] {
+    const pairs = new Set<string>();
+    this.filteredBoardDrop.forEach(p => {
+      const key = `${p.routeId}_${p.placeId}`;
+      pairs.add(key);
+    });
+    const arr = Array.from(pairs).map(str => {
+      const [r, pid] = str.split('_').map(Number);
+      return { routeId: r, placeId: pid };
+    });
+    arr.sort((a, b) => a.routeId - b.routeId || a.placeId - b.placeId);
+    return arr;
+  }
+
+  getPlaceNameById(placeId: number): string {
+    return this.placeNameMap[placeId] || '';
+  }
+
+
+  // open the selected route/place row for editing
+  onView(routeId: number, placeId?: number) {
+    const loc = this.locations.find(l => l.routeId === routeId);
     if (loc) {
       this.selectedLocation = loc;
       this.locationInput = loc.routeLocation;
     }
+
+    // set selected place if available
+    if (placeId) {
+      const placeObj = this.placeNames.find(p => p.placeId === placeId);
+      if (placeObj) {
+        this.selectedPlace = placeObj;
+        this.placeInput = placeObj.placeName || '';
+      } else {
+        // fallback: just set name from map
+        this.placeInput = this.placeNameMap[placeId] || '';
+        this.selectedPlace = { placeId, placeName: this.placeInput } as RoutePlaceVO;
+      }
+    }
+
+    // set UI state for editing
     this.isCreate = false;
-    this.isUpdate = false;
-    this.isDelete = false;
+    this.isUpdate = true;
+    this.isDelete = true;
     this.isListView = false;
-    this.isView = true;
-    this.isEdit = false;
+    this.isView = false;
+    this.isEdit = true;
     this.initializeForm();
-    const placeId = this.selectedPlace && this.selectedPlace.placeId ? this.selectedPlace.placeId : 0;
-    this.boardDropPointService.viewAllBoardDropByRouteId(locationId, placeId).subscribe((data) => {
+    this.isShow = true;
+
+    const pid = placeId || (this.selectedPlace?.placeId || 0);
+    this.boardDropPointService.viewAllBoardDropByRouteId(routeId, pid).subscribe((data) => {
       this.dropPoints = data;
-      this.isShow = true;
     });
   }
 
