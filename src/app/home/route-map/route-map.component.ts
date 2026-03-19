@@ -28,6 +28,7 @@ export class RouteMapComponent implements OnInit {
     isListView: boolean = false; 
     isView: boolean = false;
     isEdit: boolean = false;
+    isFormDirty: boolean = false;
     routeMapForm!: FormGroup;
     routeMapCode: string = '';
     routeMapCodeArr: string[] = []; // Replace with API data
@@ -66,17 +67,42 @@ export class RouteMapComponent implements OnInit {
       this.routeMapService.getAllRouteCode().subscribe((data) => {
         this.routeMapCodeArr = data;
         this.filteredRouteMapCodeArr = data;
+      },
+      (error) => {
+        console.log(error.error.error);
+        this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
       });
       this.routeMapService.getAllLocation().subscribe((data) => {
         this.locationArr = data;
         this.viaLocationArr = data;
+      },
+      (error) => {
+        console.log(error.error.error);
+        this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
       });
         this.loadViaPlaces();
+  }
+
+  validateFromToLocation(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const changedValue = target.getAttribute('formControlName') === 'fromLocation' ? 'fromLocation' : 'toLocation';
+    
+    const from = this.routeMapForm.get('fromLocation')?.value;
+    const to = this.routeMapForm.get('toLocation')?.value;
+
+    if (from && to && from === to) {
+      this.messageDialog.openDialog('Error', 'From Location and To Location cannot be the same', 'Close', 'error');
+      this.routeMapForm.get(changedValue)?.reset();
+    }
   }
 
     loadViaPlaces() {
       this.routePlaceService.getAll().subscribe((places: any[]) => {
         this.viaPlaces = places;
+      },
+      (error) => {
+        console.log(error.error.error);
+        this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
       });
     }
 
@@ -129,6 +155,7 @@ export class RouteMapComponent implements OnInit {
       this.filteredStopLocations = [];
       this.isStopLocationDropdownOpen = false;
       this.showStopValidation = false;
+      this.isFormDirty = true; // Mark form as dirty when stops change
       // Clear selected dropdowns after adding
       if (this.selectedStopLocation === location) {
         this.selectedStopLocation = '';
@@ -136,11 +163,14 @@ export class RouteMapComponent implements OnInit {
       if (this.selectedStopPlace === location) {
         this.selectedStopPlace = '';
       }
+    } else {
+      this.messageDialog.openDialog('Error', 'Stop location already added. Please select new stop location', 'Close', 'error');
     }
   }
 
   removeStopLocation(index: number) {
     this.stopLocations.splice(index, 1);
+    this.isFormDirty = true; // Mark form as dirty when stops change
   }
 
   closeStopLocationDropdown() {
@@ -162,6 +192,36 @@ export class RouteMapComponent implements OnInit {
         tollCount: ['', [Validators.required, Validators.pattern('^[0-9]+$')]], // e.g. 5
         driverBeta: ['', [Validators.required, Validators.pattern('^[0-9]+(\.[0-9]{1,2})?$')]] // e.g. 100.50
       });
+
+      // Track form changes for update button enable/disable
+      this.routeMapForm.valueChanges.subscribe(() => {
+        this.isFormDirty = true;
+      });
+    }
+
+    enableFormControls() {
+      // Enable all form controls
+      this.routeMapForm.get('fromLocation')?.enable();
+      this.routeMapForm.get('toLocation')?.enable();
+      this.routeMapForm.get('viaType')?.enable();
+      this.routeMapForm.get('viaLocation')?.enable();
+      this.routeMapForm.get('viaPlace')?.enable();
+      this.routeMapForm.get('tollCount')?.enable();
+      this.routeMapForm.get('distanceKm')?.enable();
+      this.routeMapForm.get('driverBeta')?.enable();
+    }
+
+    disableFormControls() {
+      // Disable core route definition controls during edit
+      this.routeMapForm.get('fromLocation')?.disable();
+      this.routeMapForm.get('toLocation')?.disable();
+      this.routeMapForm.get('viaType')?.disable();
+      this.routeMapForm.get('viaLocation')?.disable();
+      this.routeMapForm.get('viaPlace')?.disable();
+      // Keep operational fields enabled
+      this.routeMapForm.get('tollCount')?.enable();
+      this.routeMapForm.get('distanceKm')?.enable();
+      this.routeMapForm.get('driverBeta')?.enable();
     }
 
    // tollCost: ['', [Validators.required,Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
@@ -176,6 +236,9 @@ export class RouteMapComponent implements OnInit {
       this.isEdit = true;
       this.stopLocations = [];
       this.initializeForm();
+      this.isFormDirty = false; // Reset dirty state for new form
+      // Enable all form controls for create mode
+      this.enableFormControls();
     }
   
     onCreate() {
@@ -212,7 +275,8 @@ export class RouteMapComponent implements OnInit {
         });
         this.routeMapService.createRoute(this.routeMapVO)
           .subscribe(
-            (resp: GeneralRespVO) => {
+            (resp: any) => {
+              console.log('Create RouteMap Response:', resp);
               if (resp.message === "Success") {
                 let message = 'Route Map Creation Successfull!! ' + resp.subMessage;
                 this.messageDialog.openDialog('Info', message, 'Ok');
@@ -221,6 +285,10 @@ export class RouteMapComponent implements OnInit {
                 // (Removed: no viaPointsArr)
                 this.routeMapService.getAllRouteCode().subscribe((data) => {
                   this.routeMapCodeArr = data;
+                },
+                (error) => {
+                  console.log(error.error.error);
+                  this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
                 });
               } else if (resp.message === "Already exist") {
                 let message = 'Mapping already exist for the selected location';
@@ -230,6 +298,10 @@ export class RouteMapComponent implements OnInit {
                 // (Removed: no viaPointsArr)
                 this.routeMapService.getAllRouteCode().subscribe((data) => {
                   this.routeMapCodeArr = data;
+                },
+                (error) => {
+                  console.log(error.error.error);
+                  this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
                 });
               } else {
                 this.messageDialog.openDialog('Error', 'Please verify your info', 'Close');
@@ -237,7 +309,11 @@ export class RouteMapComponent implements OnInit {
                 this.stopLocations = [];
                 // (Removed: no viaPointsArr)
               }
-            })
+            },
+        (error) => {
+          console.log(error.error.error);
+          this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
+        } )
       } else {
         this.messageDialog.openDialog('Error', 'Please fill out all the fields', 'Close');
         this.routeMapForm.markAllAsTouched();
@@ -261,24 +337,38 @@ export class RouteMapComponent implements OnInit {
       this.routeMapService.getRouteByCode(this.routeMapCode).subscribe((data) => {
         if (data) {
           this.routeMapForm.patchValue(data);
+          // Set viaType based on response data
+          if (data.viaLocation) {
+            this.routeMapForm.get('viaType')?.setValue('location');
+          } else if (data.viaPlace) {
+            this.routeMapForm.get('viaType')?.setValue('place');
+          }
           // Map stopMapList to stopLocations (use stopName)
           this.stopLocations = (data.stopMapList || []).map((stop: any) => stop.stopName);
+          this.isFormDirty = false; // Reset dirty state after loading data
           this.isShow = true; // Show form with details
+          // Disable core route controls during edit
+          this.disableFormControls();
         } else {
           alert('No RouteMap found with this Route Code!');
         }
+      },
+      (error) => {
+        console.log(error.error.error);
+        this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
       });
     }
   
     onUpdate() {
       this.showStopValidation = false;
+      this.isFormDirty = false; // Reset dirty state after update
       if (this.stopLocations.length === 0) {
         this.showStopValidation = true;
         this.messageDialog.openDialog('Error', 'Please add at least one stop location', 'Close');
         return;
       }
       if (this.routeMapForm.valid) {
-        this.routeMapVO = Object.assign({}, this.routeMapForm.value);
+        this.routeMapVO = Object.assign({}, this.routeMapForm.getRawValue());
         // Build stopMapList for payload (same logic as onCreate)
         this.routeMapVO.stopMapList = this.stopLocations.map((stop, idx) => {
           let placeId: number = 0;
@@ -303,7 +393,7 @@ export class RouteMapComponent implements OnInit {
         });
         this.routeMapService.updateRoute(this.routeMapCode, this.routeMapVO)
           .subscribe(
-            (resp: GeneralRespVO) => {
+            (resp: any) => {
               if (resp.message === "Success") {
                 let message = 'RouteMap Updation Successfull!! ' + resp.subMessage;
                 this.messageDialog.openDialog('Info', message, 'Ok');
@@ -313,6 +403,10 @@ export class RouteMapComponent implements OnInit {
                 this.routeMapForm.reset();
                 this.stopLocations = [];
               }
+            },
+            (error) => {
+              console.log(error.error.error);
+              this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
             })
       } else {
         this.messageDialog.openDialog('Error', 'Please fill out all the fields', 'Close');
@@ -323,19 +417,32 @@ export class RouteMapComponent implements OnInit {
     onView(routeMapCode: string) {
       this.routeMapCode = routeMapCode;
       this.isCreate = false;
-      this.isUpdate = false;
-      this.isDelete = false;
+      this.isUpdate = true;
+      this.isDelete = true;
       this.isListView = false;
-      this.isView = true;
-      this.isEdit = false;
+      this.isView = false;
+      this.isEdit = true;
       this.initializeForm();
       this.routeMapService.getRouteByCode(this.routeMapCode).subscribe((data) => {
         if (data) {
           this.routeMapForm.patchValue(data);
+          // Set viaType based on response data
+          if (data.viaLocation) {
+            this.routeMapForm.get('viaType')?.setValue('location');
+          } else if (data.viaPlace) {
+            this.routeMapForm.get('viaType')?.setValue('place');
+          }
           // Map stopMapList to stopLocations (use stopName)
           this.stopLocations = (data.stopMapList || []).map((stop: any) => stop.stopName);
+          this.isFormDirty = false; // Reset dirty state after loading data
           this.isShow = true; // Show form with details
+          // Disable core route controls during edit
+          this.disableFormControls();
         }
+      },
+      (error) => {
+        console.log(error.error.error);
+        this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
       });
     }
   
@@ -346,6 +453,10 @@ export class RouteMapComponent implements OnInit {
             this.messageDialog.openDialog('Info', resp, 'Ok');
             this.routeMapForm.reset();
             this.routeMapCode = '';
+          },
+          (error) => {
+            console.log(error.error.error);
+            this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
           })
     }
   
@@ -361,6 +472,10 @@ export class RouteMapComponent implements OnInit {
         this.routeMap = data;
         this.filteredRoute = data; // Initialize filtered data
         
+      },
+      (error) => {
+        console.log(error.error.error);
+        this.messageDialog.openDialog('Error', error.error.error, 'Close', 'error');
       });
     }
   
@@ -373,20 +488,14 @@ export class RouteMapComponent implements OnInit {
           (route.viaLocation && route.viaLocation.toLowerCase().includes(searchLower)) ||
           route.toLocation.toLowerCase().includes(searchLower);
         
-        const matchesStops = route.stopLocations && route.stopLocations.some((stop: string) => 
-          stop.toLowerCase().includes(searchLower)
+        const matchesStops = route.stopMapList && route.stopMapList.some((stop: any) => 
+          stop.stopName.toLowerCase().includes(searchLower)
         );
         
         return matchesBasic || matchesStops;
       });
     }
-  
-    onBack() {
-      this.routeMapForm.reset();
-      this.routeMapCode = '';
-      this.onLoadRouteMapList();
-    }
-  
+    
     onNavigateHome() {
       this.router.navigate(['/home']);
     }

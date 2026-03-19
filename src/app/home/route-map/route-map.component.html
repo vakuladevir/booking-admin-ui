@@ -31,7 +31,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" (click)="onSearch();" data-bs-dismiss="modal" [disabled]!routeMapCodeInput>Search & Edit</button>
+            <button type="button" class="btn btn-primary" (click)="onSearch();" data-bs-dismiss="modal" [disabled]="!routeMapCodeInput">Search & Edit</button>
           </div>
         </div>
         <br>
@@ -54,13 +54,13 @@
         <!-- Row 2: From Location | To Location -->
         <div class="col-md-6">
           <label class="form-label">From Location</label>
-          <select formControlName="fromLocation" class="form-control" [disabled]!isEdit>
+          <select formControlName="fromLocation" class="form-control" (change)="validateFromToLocation($any($event))">
             <option *ngFor="let arr of locationArr" [value]="arr">{{ arr }}</option>
           </select>
         </div>
         <div class="col-md-6">
           <label class="form-label">To Location</label>
-          <select formControlName="toLocation" class="form-control" [disabled]!isEdit>
+          <select formControlName="toLocation" class="form-control" (change)="validateFromToLocation($any($event))">
             <option *ngFor="let arr of locationArr" [value]="arr">{{ arr }}</option>
           </select>
         </div>
@@ -81,7 +81,7 @@
         <div class="col-md-6">
           <ng-container *ngIf="routeMapForm.get('viaType')?.value === 'location'">
             <label class="form-label">Via Location</label>
-            <select class="form-control" formControlName="viaLocation" [disabled]!isEdit (change)="onViaLocationChange($any($event.target).value)">
+            <select class="form-control" formControlName="viaLocation" (change)="onViaLocationChange($any($event.target).value)">
               <option value="">-- Select Via Location --</option>
               <option *ngFor="let arr of viaLocationArr" [value]="arr">{{ arr }}</option>
             </select>
@@ -99,14 +99,14 @@
       <div class="row g-3 mt-2">
         <div class="col-md-6">
           <label class="form-label">Stops via Location</label>
-          <select class="form-control" [(ngModel)]="selectedStopLocation" [ngModelOptions]="{standalone: true}" (change)="addStopLocation(selectedStopLocation)" [disabled]!isEdit>
+          <select class="form-control" [(ngModel)]="selectedStopLocation" [ngModelOptions]="{standalone: true}" (change)="addStopLocation(selectedStopLocation)" [disabled]="!isEdit">
             <option value="">-- Select Stop Location --</option>
             <option *ngFor="let loc of locationArr" [value]="loc">{{ loc }}</option>
           </select>
         </div>
         <div class="col-md-6">
           <label class="form-label">Stops via Place</label>
-          <select class="form-control" [(ngModel)]="selectedStopPlace" [ngModelOptions]="{standalone: true}" (change)="addStopLocation(selectedStopPlace)" [disabled]!isEdit>
+          <select class="form-control" [(ngModel)]="selectedStopPlace" [ngModelOptions]="{standalone: true}" (change)="addStopLocation(selectedStopPlace)" [disabled]="!isEdit">
             <option value="">-- Select Stop Place --</option>
             <option *ngFor="let place of viaPlaces" [value]="place.placeName">{{ place.placeName }}</option>
           </select>
@@ -127,13 +127,23 @@
       </div>
       <!-- Form Submit Button -->
       <div class="row mt-4">
-        <div class="col-12">
-          <button type="button" class="btn btn-success w-100" (click)="onCreate()" [disabled]="!routeMapForm.valid || stopLocations.length === 0">
+        <div class="col-12 d-flex justify-content-center">
+          <button *ngIf="isCreate" type="button" class="btn btn-success" (click)="onCreate()" [disabled]="!routeMapForm.valid || stopLocations.length === 0">
             Create
           </button>
+          <div *ngIf="isUpdate || isDelete" class="d-flex gap-2">
+            <button *ngIf="isUpdate" type="button" class="btn btn-warning" (click)="onUpdate()" [disabled]="!routeMapForm.valid || stopLocations.length === 0 || !isFormDirty">
+              Update
+            </button>
+            <button *ngIf="isDelete" type="button" class="btn btn-danger" (click)="onDelete()">
+              Delete
+            </button>
+          </div>
         </div>
       </div>
-                <!-- Removed legacy ngModel-based viaType/viaLocation code and unmatched closing tags -->
+    </form>
+    <!-- Removed legacy ngModel-based viaType/viaLocation code and unmatched closing tags -->
+  </div>
   
   
     <!-- Display Table only if isListView is true -->
@@ -169,14 +179,14 @@
               <td>{{ route.fromLocation }}</td>
               <td><span class="badge bg-secondary">{{ route.viaLocation || 'N/A' }}</span></td>
               <td>
-                <span class="badge bg-success">{{ route.viaPoints || 'N/A' }}</span>
+                <span class="badge bg-success">{{ route.viaLocation || route.viaPlace || 'N/A' }}</span>
               </td>
               <td>
                 <div class="d-flex flex-column gap-1">
-                  <span *ngFor="let stop of route.stopLocations; let stopIndex = index" class="badge bg-info" style="font-size: 0.7rem; text-align: left;">
-                    <strong>Stop {{ stopIndex + 1 }}:</strong> {{ stop }}
+                  <span *ngFor="let stop of route.stopMapList; let stopIndex = index" class="badge bg-info" style="font-size: 0.7rem; text-align: left;">
+                    <strong>Stop {{ stopIndex + 1 }}:</strong> {{ stop.stopName }}
                   </span>
-                  <span *ngIf="!route.stopLocations || route.stopLocations.length === 0" class="badge bg-light text-dark">None</span>
+                  <span *ngIf="!route.stopMapList || route.stopMapList.length === 0" class="badge bg-light text-dark">None</span>
                 </div>
               </td>
               <td>{{ route.toLocation }}</td>
@@ -188,3 +198,7 @@
               </td>
             </tr>
           </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
